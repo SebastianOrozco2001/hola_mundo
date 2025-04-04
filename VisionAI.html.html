@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionAI - Clasificador de Residuos</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('reciclaje_blur.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #333;
+            transition: all 0.5s ease;
+            overflow-x: hidden;
+            position: relative;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+        body.dark-mode {
+            background-image: url('reciclaje_blur_dark.jpg');
+            color: #e0e0e0;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.2);
+        }
+        .navbar {
+            background-color: #fff;
+            padding: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            transition: background-color 0.5s;
+            animation: slideInDown 1s ease-in;
+        }
+        .navbar.dark-mode {
+            background-color: #2d3839;
+        }
+        .navbar a {
+            color: #5f6368;
+            text-decoration: none;
+            margin: 0 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: bounceIn 1s ease-in;
+        }
+        .navbar a:hover {
+            color: #34c759;
+            transform: scale(1.1);
+        }
+        .menu-toggle {
+            display: none;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            transition: transform 0.3s;
+        }
+        .menu-toggle:hover {
+            transform: rotate(90deg);
+        }
+        .section {
+            max-width: 1000px;
+            margin: 80px auto 40px;
+            padding: 20px;
+            text-align: center;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+            animation: slideInLeft 1s ease-in;
+        }
+        .section:nth-child(even) {
+            animation: slideInRight 1s ease-in;
+        }
+        .section.dark-mode {
+            background-color: #2d3839;
+        }
+        h1 {
+            color: #34c759;
+            font-size: clamp(32px, 5vw, 40px);
+            font-weight: 500;
+            animation: bounceIn 1s ease-in;
+        }
+        h2 {
+            color: #34c759;
+            font-size: clamp(24px, 4vw, 32px);
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-in;
+        }
+        p {
+            font-size: clamp(16px, 3vw, 18px);
+            color: #666;
+            line-height: 1.6;
+            animation: fadeInUp 1s ease-in;
+        }
+        .media-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            aspect-ratio: 4 / 3;
+            margin: 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            background-color: #fff;
+            transition: transform 0.3s ease;
+            animation: zoomIn 1s ease-in;
+        }
+        .media-container:hover {
+            transform: scale(1.05);
+        }
+        #video, #canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #canvas {
+            display: none;
+        }
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background-color: #34c759;
+            color: white;
+            cursor: pointer;
+            font-size: clamp(14px, 2.5vw, 16px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: slideUpFade 0.5s ease-in forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:nth-child(1) { animation-delay: 0.1s; }
+        .btn:nth-child(2) { animation-delay: 0.2s; }
+        .btn:nth-child(3) { animation-delay: 0.3s; }
+        .btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            animation: pulse 1s infinite;
+        }
+        .btn:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+        .btn:active:after {
+            width: 200px;
+            height: 200px;
+        }
+        .btn i {
+            font-size: clamp(18px, 3vw, 20px);
+            transition: transform 0.3s;
+        }
+        .btn:hover i {
+            transform: translateX(5px);
+        }
+        #result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+        #result-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+            width: 90%;
+            max-width: 500px;
+            animation: zoomIn 0.5s ease-in;
+        }
+        .modal-content h2 {
+            color: #34c759;
+            margin-bottom: 20px;
+        }
+        .modal-content p {
+            font-size: clamp(18px, 3.5vw, 22px);
+            margin: 20px 0;
+        }
+        .close-btn {
+            background-color: #e0e0e0;
+            color: #333;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+        .close-btn:hover {
+            background-color: #d0d0d0;
+            transform: scale(1.05) translateY(-2px);
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #34c759;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite, pulse 1.5s infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        .history {
+            margin: 20px auto;
+            max-width: 90%;
+            text-align: left;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            animation: slideInUp 1s ease-in;
+        }
+        .history.dark-mode {
+            background-color: #2d3839;
+            color: #e0e0e0;
+        }
+        .toggle-dark {
+            position: fixed;
+            top: 20px;
+            right: 70px;
+            padding: 10px;
+            background-color: #34c759;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: bounceIn 1s ease-in;
+        }
+        .toggle-dark:hover {
+            background-color: #2ba84a;
+            transform: scale(1.1);
+        }
+        .help-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #34c759;
+            color: white;
+            padding: 12px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: bounce 2s infinite;
+        }
+        .help-tooltip {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            animation: fadeInUp 0.5s ease-in;
+        }
+        .help-btn:hover .help-tooltip {
+            display: block;
+            opacity: 1;
+        }
+        .footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #fff;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.15);
+            position: relative;
+            bottom: 0;
+            width: 100%;
+            font-size: clamp(12px, 2vw, 14px);
+            color: #666;
+            transition: background-color 0.5s;
+            animation: slideInUp 1s ease-in;
+        }
+        .footer.dark-mode {
+            background-color: #2d3839;
+            color: #e0e0e0;
+        }
+        canvas#particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .guide-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: clamp(14px, 2.5vw, 16px);
+            animation: fadeInUp 1s ease-in;
+        }
+        .guide-table th, .guide-table td {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            text-align: left;
+        }
+        .guide-table th {
+            background-color: #34c759;
+            color: white;
+        }
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px 0;
+            gap: 20px;
+        }
+        .stat {
+            text-align: center;
+            animation: slideUpFade 1.5s ease-in;
+            flex: 1;
+            min-width: 120px;
+        }
+        .stat-number {
+            font-size: clamp(36px, 6vw, 48px);
+            color: #34c759;
+            font-weight: 500;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .gallery video {
+            width: clamp(150px, 30vw, 200px);
+            height: clamp(100px, 20vw, 150px);
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            opacity: 0;
+            animation: slideUpFade 1s ease-in forwards;
+        }
+        .gallery video:hover {
+            transform: scale(1.1);
+        }
+        .gallery video:nth-child(1) { animation-delay: 0.2s; }
+        .gallery video:nth-child(2) { animation-delay: 0.4s; }
+        .gallery video:nth-child(3) { animation-delay: 0.6s; }
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 90%;
+            margin: 20px auto;
+        }
+        .contact-form input, .contact-form textarea {
+            padding: 10px 0;
+            border: none;
+            border-bottom: 1px solid #ccc;
+            background-color: transparent;
+            font-size: clamp(14px, 2.5vw, 16px);
+            transition: border-color 0.3s ease;
+            animation: slideInUp 0.5s ease-in;
+        }
+        .contact-form input:focus, .contact-form textarea:focus {
+            border-bottom: 2px solid #34c759;
+            outline: none;
+        }
+        .contact-form button {
+            align-self: center;
+        }
+        .success-message {
+            display: none;
+            color: #34c759;
+            font-size: clamp(16px, 3vw, 18px);
+            margin-top: 20px;
+            animation: zoomIn 1s ease-in;
+        }
+        .wave-background {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+        .bottom-waves {
+            bottom: 0;
+        }
+        .top-waves {
+            top: 0;
+        }
+        .wave {
+            position: absolute;
+            width: 400%;
+            height: 100px;
+            animation: wave-animation 15s infinite linear;
+        }
+        .bottom-waves .wave:nth-child(1) { background: #2e8b57; bottom: -40px; animation-duration: 20s; }
+        .bottom-waves .wave:nth-child(2) { background: #3a9d6a; bottom: 0px; animation-duration: 18s; }
+        .bottom-waves .wave:nth-child(3) { background: #46af7d; bottom: 40px; animation-duration: 16s; }
+        .top-waves .wave:nth-child(1) { background: #2e8b57; top: -40px; animation-duration: 20s; transform: rotate(180deg); }
+        .top-waves .wave:nth-child(2) { background: #3a9d6a; top: 0px; animation-duration: 18s; transform: rotate(180deg); }
+        .top-waves .wave:nth-child(3) { background: #46af7d; top: 40px; animation-duration: 16s; transform: rotate(180deg); }
+        .wave::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: inherit;
+            border-radius: 50% 50% 0 0;
+        }
+        @keyframes wave-animation {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        .zoom-on-hover:hover {
+            transform: scale(1.1);
+            transition: transform 0.3s ease;
+        }
+        /* Modo oscuro para olas y partículas */
+        body.dark-mode .wave {
+            filter: brightness(0.8);
+        }
+        body.dark-mode #particles {
+            filter: brightness(0.8);
+        }
+        /* Media Queries para Responsividad */
+        @media (max-width: 768px) {
+            .navbar {
+                justify-content: flex-start;
+                padding: 10px;
+            }
+            .navbar a {
+                display: none;
+            }
+            .navbar.open a {
+                display: block;
+                margin: 10px 20px;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .navbar.open {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .section {
+                margin: 60px 10px 20px;
+                padding: 15px;
+            }
+            .media-container {
+                max-width: 100%;
+            }
+            .btn-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .btn {
+                width: 80%;
+                justify-content: center;
+            }
+            .stats-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .gallery {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: clamp(28px, 8vw, 36px);
+            }
+            h2 {
+                font-size: clamp(20px, 6vw, 28px);
+            }
+            .btn {
+                width: 90%;
+                font-size: clamp(12px, 4vw, 14px);
+            }
+            .gallery video {
+                width: 100%;
+                height: auto;
+            }
+            .contact-form input, .contact-form textarea {
+                font-size: clamp(12px, 3vw, 14px);
+            }
+        }
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUpFade { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes bounceIn { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } 60% { transform: translateY(-5px); } }
+        @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes slideInLeft { from { transform: translateX(-50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideInRight { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="wave-background bottom-waves">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    <div class="wave-background top-waves">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    <canvas id="particles"></canvas>
+    <div class="navbar" id="navbar">
+        <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+        <a class="zoom-on-hover" onclick="scrollToSection('home')">Inicio</a>
+        <a class="zoom-on-hover" onclick="scrollToSection('about')">Sobre Nosotros</a>
+        <a class="zoom-on-hover" onclick="scrollToSection('howto')">Cómo Funciona</a>
+        <a class="zoom-on-hover" onclick="scrollToSection('contact')">Contacto</a>
+    </div>
+    <button class="toggle-dark zoom-on-hover" onclick="toggleDarkMode()">🌙</button>
+
+    <!-- Inicio -->
+    <div id="home" class="section">
+        <h1>VisionAI</h1>
+        <p>Clasifica tus residuos de forma inteligente</p>
+        <div class="media-container">
+            <video id="video" autoplay></video>
+            <canvas id="canvas"></canvas>
+        </div>
+        <div class="btn-container">
+            <button class="btn zoom-on-hover" onclick="startCamera()"><i class="material-icons">videocam</i> Iniciar Cámara</button>
+            <button class="btn zoom-on-hover" onclick="captureImage()" style="background-color: #ea4335;"><i class="material-icons">camera_alt</i> Capturar</button>
+            <input type="file" id="upload" accept="image/*" style="display: none;" onchange="uploadImage()">
+            <button class="btn zoom-on-hover" onclick="document.getElementById('upload').click()" style="background-color: #34c759;"><i class="material-icons">upload</i> Subir Imagen</button>
+            <button class="btn zoom-on-hover" onclick="liveDetection()" style="background-color: #4285f4;"><i class="material-icons">visibility</i> Detección en Vivo</button>
+        </div>
+        <div class="loader" id="loader"></div>
+        <div class="history" id="history">
+            <h3>Historial de Análisis <button class="btn zoom-on-hover" style="float: right; padding: 8px 16px;" onclick="clearHistory()">Borrar</button></h3>
+            <ul id="history-list"></ul>
+        </div>
+    </div>
+
+    <!-- Sobre Nosotros -->
+    <div id="about" class="section">
+        <h2>Sobre Nosotros</h2>
+        <p>VisionAI es una herramienta innovadora para clasificar residuos y fomentar el reciclaje. Nuestra misión es reducir el impacto ambiental mediante tecnología inteligente y educación ambiental.</p>
+        <div class="stats-container">
+            <div class="stat"><span class="stat-number" id="stat1">0</span><p>Toneladas Clasificadas</p></div>
+            <div class="stat"><span class="stat-number" id="stat2">0</span><p>Usuarios Activos</p></div>
+            <div class="stat"><span class="stat-number" id="stat3">0</span><p>Impacto Positivo</p></div>
+        </div>
+    </div>
+
+    <!-- Cómo Funciona -->
+    <div id="howto" class="section">
+        <h2>Cómo Funciona</h2>
+        <p>Sigue estos pasos para clasificar tus residuos:</p>
+        <ol style="text-align: left; max-width: 600px; margin: 20px auto;">
+            <li>Inicia la cámara o sube una imagen.</li>
+            <li>Captura el residuo que deseas analizar.</li>
+            <li>Espera el análisis y revisa el resultado.</li>
+        </ol>
+        <div class="gallery">
+            <img src="plastico.jpg" alt="Plástico" class="zoom-on-hover">
+            <img src="organico.jpg" alt="Orgánico" class="zoom-on-hover">
+            <img src="papel.jpg" alt="Papel" class="zoom-on-hover">
+        </div>
+        <h3>Guía de Reciclaje</h3>
+        <table class="guide-table">
+            <tr><th>Categoría</th><th>Ejemplos</th></tr>
+            <tr><td>Reciclable</td><td>Botellas de plástico, papel, cartón</td></tr>
+            <tr><td>No Reciclable</td><td>Plásticos sucios, pañales, espejos</td></tr>
+            <tr><td>Orgánico</td><td>Restos de comida, cáscaras, hojas</td></tr>
+        </table>
+    </div>
+
+    <!-- Contacto -->
+    <div id="contact" class="section">
+        <h2>Contacto</h2>
+        <p>¿Tienes preguntas? ¡Contáctanos!</p>
+        <form class="contact-form" onsubmit="submitForm(event)">
+            <input type="text" placeholder="Nombre" required>
+            <input type="email" placeholder="Correo Electrónico" required>
+            <textarea placeholder="Mensaje" rows="5" required></textarea>
+            <button class="btn zoom-on-hover" type="submit">Enviar</button>
+        </form>
+        <div class="success-message" id="success-message">¡Mensaje enviado con éxito!</div>
+    </div>
+
+    <!-- Modal de Resultados -->
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2>Resultado del Análisis</h2>
+            <p id="result-text"></p>
+            <button class="close-btn zoom-on-hover" onclick="closeModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <button class="help-btn zoom-on-hover">
+        <i class="material-icons">help_outline</i>
+        <span class="help-tooltip">Usa la cámara o sube una imagen para clasificar residuos.</span>
+    </button>
+    <div class="footer">
+        <p>© 2025 VisionAI. Todos los derechos reservados.</p>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const loader = document.getElementById('loader');
+        const resultModal = document.getElementById('result-modal');
+        const resultText = document.getElementById('result-text');
+        const historyList = document.getElementById('history-list');
+        const ctx = canvas.getContext('2d');
+        let statsAnimated = false;
+
+        // Partículas de reciclaje
+        const particleCanvas = document.getElementById('particles');
+        const particleCtx = particleCanvas.getContext('2d');
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+        let particles = [];
+        function createParticle() {
+            return {
+                x: Math.random() * particleCanvas.width,
+                y: Math.random() * particleCanvas.height,
+                size: Math.random() * 10 + 5, // Tamaño más pequeño
+                speedX: Math.random() * 0.6 - 0.3, // Velocidad aumentada
+                speedY: Math.random() * 0.6 - 0.3, // Velocidad aumentada
+                rotation: 0
+            };
+        }
+        for (let i = 0; i < 30; i++) particles.push(createParticle()); // Menos partículas
+        function animateParticles() {
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            particles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.rotation += 0.05;
+                if (p.x < 0 || p.x > particleCanvas.width) p.speedX *= -1;
+                if (p.y < 0 || p.y > particleCanvas.height) p.speedY *= -1;
+                particleCtx.save();
+                particleCtx.translate(p.x, p.y);
+                particleCtx.rotate(p.rotation);
+                particleCtx.beginPath();
+                particleCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                particleCtx.fillStyle = '#8fbc8f'; // Color más claro
+                particleCtx.fill();
+                particleCtx.restore();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // Estadísticas animadas
+        function animateStats() {
+            const stats = [
+                { id: 'stat1', target: 1500, current: 0 },
+                { id: 'stat2', target: 5000, current: 0 },
+                { id: 'stat3', target: 80, current: 0 }
+            ];
+            stats.forEach(stat => {
+                const element = document.getElementById(stat.id);
+                const interval = setInterval(() => {
+                    if (stat.current < stat.target) {
+                        stat.current += Math.ceil(stat.target / 100);
+                        element.textContent = stat.current;
+                    } else {
+                        element.textContent = stat.target;
+                        clearInterval(interval);
+                    }
+                }, 20);
+            });
+        }
+        window.addEventListener('scroll', () => {
+            if (!statsAnimated && document.getElementById('about').getBoundingClientRect().top < window.innerHeight) {
+                animateStats();
+                statsAnimated = true;
+            }
+        });
+
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.scrollIntoView({ behavior: 'smooth' });
+            toggleMenu(false);
+        }
+
+        function toggleMenu(forceClose = null) {
+            const navbar = document.getElementById('navbar');
+            if (forceClose === false || navbar.classList.contains('open')) {
+                navbar.classList.remove('open');
+            } else {
+                navbar.classList.add('open');
+            }
+        }
+
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    canvas.style.display = 'none';
+                })
+                .catch(err => {
+                    console.error("Error al acceder a la cámara: ", err);
+                    alert("No se pudo acceder a la cámara");
+                });
+        }
+
+        function captureImage() {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+            playSound();
+            analyzeImage();
+        }
+
+        function uploadImage() {
+            const file = document.getElementById('upload').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        video.style.display = 'none';
+                        canvas.style.display = 'block';
+                        playSound();
+                        analyzeImage();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function analyzeImage() {
+            loader.style.display = 'block';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                const randomResult = Math.random();
+                let message, details;
+                if (randomResult < 0.33) {
+                    message = "Material Reciclable";
+                    details = "Deposítalo en el contenedor azul.";
+                } else if (randomResult < 0.66) {
+                    message = "Material No Reciclable";
+                    details = "Llévalo a un punto de recolección especial.";
+                } else {
+                    message = "Material Orgánico";
+                    details = "Úsalo para compost o desecha en el contenedor marrón.";
+                }
+                resultText.innerHTML = `${message}<br><small>${details}</small>`;
+                resultModal.classList.add('show');
+                addToHistory(message);
+            }, 2000);
+        }
+
+        function closeModal() {
+            resultModal.classList.remove('show');
+            video.style.display = 'block';
+            canvas.style.display = 'none';
+        }
+
+        function addToHistory(result) {
+            const li = document.createElement('li');
+            li.textContent = `${new Date().toLocaleTimeString()} - ${result}`;
+            historyList.appendChild(li);
+        }
+
+        function clearHistory() {
+            historyList.innerHTML = '';
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            document.querySelector('.navbar').classList.toggle('dark-mode');
+            document.querySelectorAll('.section').forEach(section => section.classList.toggle('dark-mode'));
+            document.querySelector('.history').classList.toggle('dark-mode');
+            document.querySelector('.footer').classList.toggle('dark-mode');
+        }
+
+        function playSound() {
+            const audio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
+            audio.play();
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+            const successMessage = document.getElementById('success-message');
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+                document.querySelector('.contact-form').reset();
+            }, 3000);
+        }
+
+        function liveDetection() {
+            alert("Funcionalidad de detección en vivo aún no implementada.");
+            // Aquí iría la lógica para la detección en vivo
+        }
+
+        // Ajustar canvas al cambiar tamaño de pantalla
+        window.addEventListener('resize', () => {
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+            canvas.width = document.querySelector('.media-container').offsetWidth;
+            canvas.height = canvas.width * (3 / 4);
+        });
+        canvas.width = document.querySelector('.media-container').offsetWidth;
+        canvas.height = canvas.width * (3 / 4);
+    </script>
+</body>
+</html>
