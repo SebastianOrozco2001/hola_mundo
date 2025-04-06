@@ -566,7 +566,7 @@
     <div class="wave"></div>
   </div>
   <canvas id="particles"></canvas>
-  
+
   <!-- Navbar -->
   <div class="navbar" id="navbar">
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
@@ -581,9 +581,8 @@
   <div id="home" class="section">
     <h1>VisionAI</h1>
     <p>Clasifica tus residuos de forma inteligente</p>
-    <!-- Contenedor para video y canvas (overlay) -->
     <div class="media-container" style="position: relative; display: inline-block;">
-      <video id="video" autoplay muted playsinline style="display: block; width: 640px; height: auto;"></video>
+      <video id="video" autoplay muted playsinline style="display: block; width: 100%; max-width: 640px; height: auto;"></video>
       <canvas id="canvas" style="position: absolute; top: 0; left: 0; display: block;"></canvas>
     </div>
     <div class="btn-container">
@@ -696,71 +695,55 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 
-  <script>
+<script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const loader = document.getElementById('loader');
-    const resultModal = document.getElementById('result-modal');
-    const resultText = document.getElementById('result-text');
-    const historyList = document.getElementById('history-list');
     const stopCameraButton = document.getElementById('stopCamera');
     let model = null;
 
-    // Función para iniciar la cámara y cargar el modelo para detección en vivo
     async function startCamera() {
       try {
-        let videoConstraints = { video: true };
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let constraints = { video: true };
+
         if (isMobile) {
-          videoConstraints = { video: { facingMode: 'environment' } };
+          constraints = {
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              aspectRatio: { ideal: 1.7777777778 } // 16:9
+            }
+          };
         }
-        const stream = await navigator.mediaDevices.getUserMedia(videoConstraints);
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = stream;
         video.style.display = 'block';
         canvas.style.display = 'block';
         loader.style.display = 'block';
         stopCameraButton.style.display = 'block';
 
-        video.addEventListener('loadeddata', async () => {
+        video.addEventListener('loadedmetadata', async () => {
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
+
           if (!model) {
             model = await cocoSsd.load();
-            console.log('✅ Modelo COCO-SSD cargado.');
+            console.log('✅ Modelo cargado.');
           }
+
           loader.style.display = 'none';
-          detectFrame(); // Inicia la detección en tiempo real
+          detectFrame();
         });
       } catch (error) {
         alert('Error al acceder a la cámara: ' + error.message);
-        console.error('Error al acceder a la cámara:', error);
+        console.error(error);
       }
     }
 
-    // Función para subir imagen sin análisis
-    function uploadImage() {
-      const file = document.getElementById('upload').files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const img = new Image();
-          img.onload = function () {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            // Se muestra la imagen en el canvas sin realizar análisis
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            // Se oculta el video para mostrar la imagen cargada
-            video.style.display = 'none';
-            canvas.style.display = 'block';
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    // Función para detección en vivo sobre la cámara
     async function detectFrame() {
       if (!model || !video.srcObject) return;
       const predictions = await model.detect(video);
@@ -772,25 +755,29 @@
           ctx.strokeRect(...pred.bbox);
           ctx.fillStyle = 'lime';
           ctx.font = '16px Arial';
-          ctx.fillText(`${pred.class} (${(pred.score * 100).toFixed(1)}%)`,
-            pred.bbox[0], pred.bbox[1] > 20 ? pred.bbox[1] - 5 : 10);
+          ctx.fillText(`${pred.class} (${(pred.score * 100).toFixed(1)}%)`, pred.bbox[0], pred.bbox[1] > 20 ? pred.bbox[1] - 5 : 10);
         }
       });
       requestAnimationFrame(detectFrame);
     }
 
-    function closeModal() {
-      resultModal.classList.remove('show');
-    }
-
-    function addToHistory(result) {
-      const li = document.createElement('li');
-      li.textContent = `${new Date().toLocaleTimeString()} - ${result}`;
-      historyList.appendChild(li);
-    }
-
-    function clearHistory() {
-      historyList.innerHTML = '';
+    function uploadImage() {
+      const file = document.getElementById('upload').files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
     function stopCamera() {
@@ -902,4 +889,7 @@
     });
   </script>
 </body>
+
+
+
 </html>
