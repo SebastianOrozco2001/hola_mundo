@@ -554,317 +554,352 @@
     </style>
 </head>
 <body>
-    <div class="wave-background bottom-waves">
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="wave"></div>
-    </div>
-    <div class="wave-background top-waves">
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="wave"></div>
-    </div>
-    <canvas id="particles"></canvas>
-    <div class="navbar" id="navbar">
-        <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-        <a class="zoom-on-hover" onclick="scrollToSection('home')">Inicio</a>
-        <a class="zoom-on-hover" onclick="scrollToSection('about')">Sobre Nosotros</a>
-        <a class="zoom-on-hover" onclick="scrollToSection('howto')">Cómo Funciona</a>
-        <a class="zoom-on-hover" onclick="scrollToSection('contact')">Contacto</a>
-    </div>
-    <button class="toggle-dark zoom-on-hover" onclick="toggleDarkMode()">🌙</button>
+  <!-- Fondos de olas -->
+  <div class="wave-background bottom-waves">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+  <div class="wave-background top-waves">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+  <canvas id="particles"></canvas>
+  
+  <!-- Navbar -->
+  <div class="navbar" id="navbar">
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <a class="zoom-on-hover" onclick="scrollToSection('home')">Inicio</a>
+    <a class="zoom-on-hover" onclick="scrollToSection('about')">Sobre Nosotros</a>
+    <a class="zoom-on-hover" onclick="scrollToSection('howto')">Cómo Funciona</a>
+    <a class="zoom-on-hover" onclick="scrollToSection('contact')">Contacto</a>
+  </div>
+  <button class="toggle-dark zoom-on-hover" onclick="toggleDarkMode()">🌙</button>
 
-    <!-- Inicio -->
-    <div id="home" class="section">
-        <h1>VisionAI</h1>
-        <p>Clasifica tus residuos de forma inteligente</p>
-        <div class="media-container">
-            <video id="video" autoplay></video>
-            <canvas id="canvas"></canvas>
-        </div>
-        <div class="btn-container">
-            <button class="btn zoom-on-hover" onclick="startCamera()"><i class="material-icons">videocam</i> Iniciar Cámara</button>
-            <button class="btn zoom-on-hover" onclick="captureImage()" style="background-color: #ea4335;"><i class="material-icons">camera_alt</i> Capturar</button>
-            <input type="file" id="upload" accept="image/*" style="display: none;" onchange="uploadImage()">
-            <button class="btn zoom-on-hover" onclick="document.getElementById('upload').click()" style="background-color: #34c759;"><i class="material-icons">upload</i> Subir Imagen</button>
-            <button class="btn zoom-on-hover" onclick="liveDetection()" style="background-color: #4285f4;"><i class="material-icons">visibility</i> Detección en Vivo</button>
-        </div>
-        <div class="loader" id="loader"></div>
-        <div class="history" id="history">
-            <h3>Historial de Análisis <button class="btn zoom-on-hover" style="float: right; padding: 8px 16px;" onclick="clearHistory()">Borrar</button></h3>
-            <ul id="history-list"></ul>
-        </div>
+  <!-- Sección Home -->
+  <div id="home" class="section">
+    <h1>VisionAI</h1>
+    <p>Clasifica tus residuos de forma inteligente</p>
+    <!-- Contenedor para video y canvas (overlay) -->
+    <div class="media-container" style="position: relative; display: inline-block;">
+      <video id="video" autoplay muted playsinline style="display: block; width: 640px; height: auto;"></video>
+      <canvas id="canvas" style="position: absolute; top: 0; left: 0; display: block;"></canvas>
     </div>
-
-    <!-- Sobre Nosotros -->
-    <div id="about" class="section">
-        <h2>Sobre Nosotros</h2>
-        <p>VisionAI es una herramienta innovadora para clasificar residuos y fomentar el reciclaje. Nuestra misión es reducir el impacto ambiental mediante tecnología inteligente y educación ambiental.</p>
-        <div class="stats-container">
-            <div class="stat"><span class="stat-number" id="stat1">0</span><p>Toneladas Clasificadas</p></div>
-            <div class="stat"><span class="stat-number" id="stat2">0</span><p>Usuarios Activos</p></div>
-            <div class="stat"><span class="stat-number" id="stat3">0</span><p>Impacto Positivo</p></div>
-        </div>
+    <div class="btn-container">
+      <button class="btn zoom-on-hover" onclick="startCamera()" style="background-color: #4285f4;">
+        <i class="material-icons">videocam</i> Iniciar Cámara
+      </button>
+      <input type="file" id="upload" accept="image/*" style="display: none;" onchange="uploadImage()">
+      <button class="btn zoom-on-hover" onclick="document.getElementById('upload').click()" style="background-color: #34c759;">
+        <i class="material-icons">upload</i> Subir Imagen
+      </button>
+      <button class="btn zoom-on-hover" onclick="stopCamera()" style="background-color: #ff6b6b; display: none;" id="stopCamera">
+        <i class="material-icons">videocam_off</i> Detener Cámara
+      </button>
     </div>
-
-    <!-- Cómo Funciona -->
-    <div id="howto" class="section">
-        <h2>Cómo Funciona</h2>
-        <p>Sigue estos pasos para clasificar tus residuos:</p>
-        <ol style="text-align: left; max-width: 600px; margin: 20px auto;">
-            <li>Inicia la cámara o sube una imagen.</li>
-            <li>Captura el residuo que deseas analizar.</li>
-            <li>Espera el análisis y revisa el resultado.</li>
-        </ol>
-        <div class="gallery">
-            <img src="plastico.jpg" alt="Plástico" class="zoom-on-hover">
-            <img src="organico.jpg" alt="Orgánico" class="zoom-on-hover">
-            <img src="papel.jpg" alt="Papel" class="zoom-on-hover">
-        </div>
-        <h3>Guía de Reciclaje</h3>
-        <table class="guide-table">
-            <tr><th>Categoría</th><th>Ejemplos</th></tr>
-            <tr><td>Reciclable</td><td>Botellas de plástico, papel, cartón</td></tr>
-            <tr><td>No Reciclable</td><td>Plásticos sucios, pañales, espejos</td></tr>
-            <tr><td>Orgánico</td><td>Restos de comida, cáscaras, hojas</td></tr>
-        </table>
+    <div class="loader" id="loader" style="display: none;">Cargando modelo...</div>
+    <div class="history" id="history">
+      <h3>Historial de Análisis 
+        <button class="btn zoom-on-hover" style="float: right; padding: 8px 16px;" onclick="clearHistory()">Borrar</button>
+      </h3>
+      <ul id="history-list"></ul>
     </div>
+  </div>
 
-    <!-- Contacto -->
-    <div id="contact" class="section">
-        <h2>Contacto</h2>
-        <p>¿Tienes preguntas? ¡Contáctanos!</p>
-        <form class="contact-form" onsubmit="submitForm(event)">
-            <input type="text" placeholder="Nombre" required>
-            <input type="email" placeholder="Correo Electrónico" required>
-            <textarea placeholder="Mensaje" rows="5" required></textarea>
-            <button class="btn zoom-on-hover" type="submit">Enviar</button>
-        </form>
-        <div class="success-message" id="success-message">¡Mensaje enviado con éxito!</div>
+  <!-- Sección Sobre Nosotros -->
+  <div id="about" class="section">
+    <h2>Sobre Nosotros</h2>
+    <p>VisionAI es una herramienta innovadora para clasificar residuos y fomentar el reciclaje. Nuestra misión es reducir el impacto ambiental mediante tecnología inteligente y educación ambiental.</p>
+    <div class="stats-container">
+      <div class="stat"><span class="stat-number" id="stat1">0</span>
+        <p>Toneladas Clasificadas</p>
+      </div>
+      <div class="stat"><span class="stat-number" id="stat2">0</span>
+        <p>Usuarios Activos</p>
+      </div>
+      <div class="stat"><span class="stat-number" id="stat3">0</span>
+        <p>Impacto Positivo</p>
+      </div>
     </div>
+  </div>
 
-    <!-- Modal de Resultados -->
-    <div id="result-modal">
-        <div class="modal-content">
-            <h2>Resultado del Análisis</h2>
-            <p id="result-text"></p>
-            <button class="close-btn zoom-on-hover" onclick="closeModal()">Cerrar</button>
-        </div>
+  <!-- Sección Cómo Funciona -->
+  <div id="howto" class="section">
+    <h2>Cómo Funciona</h2>
+    <p>Sigue estos pasos para clasificar tus residuos:</p>
+    <ol style="text-align: left; max-width: 600px; margin: 20px auto;">
+      <li>Inicia la cámara o sube una imagen.</li>
+      <li>Captura el residuo que deseas analizar.</li>
+      <li>Observa el análisis en tiempo real en la cámara.</li>
+    </ol>
+    <div class="gallery">
+      <img src="plastico.jpg" alt="Plástico" class="zoom-on-hover">
+      <img src="organico.jpg" alt="Orgánico" class="zoom-on-hover">
+      <img src="papel.jpg" alt="Papel" class="zoom-on-hover">
     </div>
+    <h3>Guía de Reciclaje</h3>
+    <table class="guide-table">
+      <tr>
+        <th>Categoría</th>
+        <th>Ejemplos</th>
+      </tr>
+      <tr>
+        <td>Reciclable</td>
+        <td>Botellas de plástico, papel, cartón</td>
+      </tr>
+      <tr>
+        <td>No Reciclable</td>
+        <td>Plásticos sucios, pañales, espejos</td>
+      </tr>
+      <tr>
+        <td>Orgánico</td>
+        <td>Restos de comida, cáscaras, hojas</td>
+      </tr>
+    </table>
+  </div>
 
-    <button class="help-btn zoom-on-hover">
-        <i class="material-icons">help_outline</i>
-        <span class="help-tooltip">Usa la cámara o sube una imagen para clasificar residuos.</span>
-    </button>
-    <div class="footer">
-        <p>© 2025 VisionAI. Todos los derechos reservados.</p>
+  <!-- Sección Contacto -->
+  <div id="contact" class="section">
+    <h2>Contacto</h2>
+    <p>¿Tienes preguntas? ¡Contáctanos!</p>
+    <form class="contact-form" onsubmit="submitForm(event)">
+      <input type="text" placeholder="Nombre" required>
+      <input type="email" placeholder="Correo Electrónico" required>
+      <textarea placeholder="Mensaje" rows="5" required></textarea>
+      <button class="btn zoom-on-hover" type="submit">Enviar</button>
+    </form>
+    <div class="success-message" id="success-message" style="display: none;">¡Mensaje enviado con éxito!</div>
+  </div>
+
+  <!-- Modal de Resultado -->
+  <div id="result-modal">
+    <div class="modal-content">
+      <h2>Resultado del Análisis</h2>
+      <p id="result-text"></p>
+      <button class="close-btn zoom-on-hover" onclick="closeModal()">Cerrar</button>
     </div>
+  </div>
 
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const loader = document.getElementById('loader');
-        const resultModal = document.getElementById('result-modal');
-        const resultText = document.getElementById('result-text');
-        const historyList = document.getElementById('history-list');
-        const ctx = canvas.getContext('2d');
-        let statsAnimated = false;
+  <!-- Botón de ayuda -->
+  <button class="help-btn zoom-on-hover">
+    <i class="material-icons">help_outline</i>
+    <span class="help-tooltip">Usa la cámara o sube una imagen para clasificar residuos.</span>
+  </button>
 
-        // Partículas de reciclaje
-        const particleCanvas = document.getElementById('particles');
-        const particleCtx = particleCanvas.getContext('2d');
-        particleCanvas.width = window.innerWidth;
-        particleCanvas.height = window.innerHeight;
-        let particles = [];
-        function createParticle() {
-            return {
-                x: Math.random() * particleCanvas.width,
-                y: Math.random() * particleCanvas.height,
-                size: Math.random() * 10 + 5, // Tamaño más pequeño
-                speedX: Math.random() * 0.6 - 0.3, // Velocidad aumentada
-                speedY: Math.random() * 0.6 - 0.3, // Velocidad aumentada
-                rotation: 0
-            };
+  <!-- Footer -->
+  <div class="footer">
+    <p>© 2025 VisionAI. Todos los derechos reservados.</p>
+  </div>
+
+  <!-- Librerías externas -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const loader = document.getElementById('loader');
+    const resultModal = document.getElementById('result-modal');
+    const resultText = document.getElementById('result-text');
+    const historyList = document.getElementById('history-list');
+    const stopCameraButton = document.getElementById('stopCamera');
+    let model = null;
+
+    // Función para iniciar la cámara y cargar el modelo para detección en vivo
+    async function startCamera() {
+      try {
+        let videoConstraints = { video: true };
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+          videoConstraints = { video: { facingMode: 'environment' } };
         }
-        for (let i = 0; i < 30; i++) particles.push(createParticle()); // Menos partículas
-        function animateParticles() {
-            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-            particles.forEach(p => {
-                p.x += p.speedX;
-                p.y += p.speedY;
-                p.rotation += 0.05;
-                if (p.x < 0 || p.x > particleCanvas.width) p.speedX *= -1;
-                if (p.y < 0 || p.y > particleCanvas.height) p.speedY *= -1;
-                particleCtx.save();
-                particleCtx.translate(p.x, p.y);
-                particleCtx.rotate(p.rotation);
-                particleCtx.beginPath();
-                particleCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-                particleCtx.fillStyle = '#8fbc8f'; // Color más claro
-                particleCtx.fill();
-                particleCtx.restore();
-            });
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
+        const stream = await navigator.mediaDevices.getUserMedia(videoConstraints);
+        video.srcObject = stream;
+        video.style.display = 'block';
+        canvas.style.display = 'block';
+        loader.style.display = 'block';
+        stopCameraButton.style.display = 'block';
 
-        // Estadísticas animadas
-        function animateStats() {
-            const stats = [
-                { id: 'stat1', target: 1500, current: 0 },
-                { id: 'stat2', target: 5000, current: 0 },
-                { id: 'stat3', target: 80, current: 0 }
-            ];
-            stats.forEach(stat => {
-                const element = document.getElementById(stat.id);
-                const interval = setInterval(() => {
-                    if (stat.current < stat.target) {
-                        stat.current += Math.ceil(stat.target / 100);
-                        element.textContent = stat.current;
-                    } else {
-                        element.textContent = stat.target;
-                        clearInterval(interval);
-                    }
-                }, 20);
-            });
-        }
-        window.addEventListener('scroll', () => {
-            if (!statsAnimated && document.getElementById('about').getBoundingClientRect().top < window.innerHeight) {
-                animateStats();
-                statsAnimated = true;
-            }
+        video.addEventListener('loadeddata', async () => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          if (!model) {
+            model = await cocoSsd.load();
+            console.log('✅ Modelo COCO-SSD cargado.');
+          }
+          loader.style.display = 'none';
+          detectFrame(); // Inicia la detección en tiempo real
         });
+      } catch (error) {
+        alert('Error al acceder a la cámara: ' + error.message);
+        console.error('Error al acceder a la cámara:', error);
+      }
+    }
 
-        function scrollToSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            section.scrollIntoView({ behavior: 'smooth' });
-            toggleMenu(false);
-        }
-
-        function toggleMenu(forceClose = null) {
-            const navbar = document.getElementById('navbar');
-            if (forceClose === false || navbar.classList.contains('open')) {
-                navbar.classList.remove('open');
-            } else {
-                navbar.classList.add('open');
-            }
-        }
-
-        function startCamera() {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    video.srcObject = stream;
-                    video.style.display = 'block';
-                    canvas.style.display = 'none';
-                })
-                .catch(err => {
-                    console.error("Error al acceder a la cámara: ", err);
-                    alert("No se pudo acceder a la cámara");
-                });
-        }
-
-        function captureImage() {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Función para subir imagen sin análisis
+    function uploadImage() {
+      const file = document.getElementById('upload').files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            // Se muestra la imagen en el canvas sin realizar análisis
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            // Se oculta el video para mostrar la imagen cargada
             video.style.display = 'none';
             canvas.style.display = 'block';
-            playSound();
-            analyzeImage();
-        }
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
 
-        function uploadImage() {
-            const file = document.getElementById('upload').files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        video.style.display = 'none';
-                        canvas.style.display = 'block';
-                        playSound();
-                        analyzeImage();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
+    // Función para detección en vivo sobre la cámara
+    async function detectFrame() {
+      if (!model || !video.srcObject) return;
+      const predictions = await model.detect(video);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      predictions.forEach(pred => {
+        if (pred.score > 0.6) {
+          ctx.strokeStyle = 'lime';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(...pred.bbox);
+          ctx.fillStyle = 'lime';
+          ctx.font = '16px Arial';
+          ctx.fillText(`${pred.class} (${(pred.score * 100).toFixed(1)}%)`,
+            pred.bbox[0], pred.bbox[1] > 20 ? pred.bbox[1] - 5 : 10);
         }
+      });
+      requestAnimationFrame(detectFrame);
+    }
 
-        function analyzeImage() {
-            loader.style.display = 'block';
-            setTimeout(() => {
-                loader.style.display = 'none';
-                const randomResult = Math.random();
-                let message, details;
-                if (randomResult < 0.33) {
-                    message = "Material Reciclable";
-                    details = "Deposítalo en el contenedor azul.";
-                } else if (randomResult < 0.66) {
-                    message = "Material No Reciclable";
-                    details = "Llévalo a un punto de recolección especial.";
-                } else {
-                    message = "Material Orgánico";
-                    details = "Úsalo para compost o desecha en el contenedor marrón.";
-                }
-                resultText.innerHTML = `${message}<br><small>${details}</small>`;
-                resultModal.classList.add('show');
-                addToHistory(message);
-            }, 2000);
-        }
+    function closeModal() {
+      resultModal.classList.remove('show');
+    }
 
-        function closeModal() {
-            resultModal.classList.remove('show');
-            video.style.display = 'block';
-            canvas.style.display = 'none';
-        }
+    function addToHistory(result) {
+      const li = document.createElement('li');
+      li.textContent = `${new Date().toLocaleTimeString()} - ${result}`;
+      historyList.appendChild(li);
+    }
 
-        function addToHistory(result) {
-            const li = document.createElement('li');
-            li.textContent = `${new Date().toLocaleTimeString()} - ${result}`;
-            historyList.appendChild(li);
-        }
+    function clearHistory() {
+      historyList.innerHTML = '';
+    }
 
-        function clearHistory() {
-            historyList.innerHTML = '';
-        }
+    function stopCamera() {
+      if (video.srcObject) {
+        const stream = video.srcObject;
+        stream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+        video.style.display = 'none';
+        canvas.style.display = 'none';
+        stopCameraButton.style.display = 'none';
+      }
+    }
 
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            document.querySelector('.navbar').classList.toggle('dark-mode');
-            document.querySelectorAll('.section').forEach(section => section.classList.toggle('dark-mode'));
-            document.querySelector('.history').classList.toggle('dark-mode');
-            document.querySelector('.footer').classList.toggle('dark-mode');
-        }
+    function toggleMenu(forceClose = null) {
+      const navbar = document.getElementById('navbar');
+      if (forceClose === false || navbar.classList.contains('open')) {
+        navbar.classList.remove('open');
+      } else {
+        navbar.classList.add('open');
+      }
+    }
 
-        function playSound() {
-            const audio = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
-            audio.play();
-        }
+    function scrollToSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      section.scrollIntoView({ behavior: 'smooth' });
+      toggleMenu(false);
+    }
 
-        function submitForm(event) {
-            event.preventDefault();
-            const successMessage = document.getElementById('success-message');
-            successMessage.style.display = 'block';
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-                document.querySelector('.contact-form').reset();
-            }, 3000);
-        }
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      document.querySelector('.navbar').classList.toggle('dark-mode');
+      document.querySelectorAll('.section').forEach(section => section.classList.toggle('dark-mode'));
+      document.querySelector('.history').classList.toggle('dark-mode');
+      document.querySelector('.footer').classList.toggle('dark-mode');
+    }
 
-        function liveDetection() {
-            alert("Funcionalidad de detección en vivo aún no implementada.");
-            // Aquí iría la lógica para la detección en vivo
-        }
+    function submitForm(event) {
+      event.preventDefault();
+      const successMessage = document.getElementById('success-message');
+      successMessage.style.display = 'block';
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+        document.querySelector('.contact-form').reset();
+      }, 3000);
+    }
 
-        // Ajustar canvas al cambiar tamaño de pantalla
-        window.addEventListener('resize', () => {
-            particleCanvas.width = window.innerWidth;
-            particleCanvas.height = window.innerHeight;
-            canvas.width = document.querySelector('.media-container').offsetWidth;
-            canvas.height = canvas.width * (3 / 4);
-        });
-        canvas.width = document.querySelector('.media-container').offsetWidth;
-        canvas.height = canvas.width * (3 / 4);
-    </script>
+    // Partículas de reciclaje
+    const particleCanvas = document.getElementById('particles');
+    const particleCtx = particleCanvas.getContext('2d');
+    particleCanvas.width = window.innerWidth;
+    particleCanvas.height = window.innerHeight;
+    let particles = [];
+    function createParticle() {
+      return {
+        x: Math.random() * particleCanvas.width,
+        y: Math.random() * particleCanvas.height,
+        size: Math.random() * 10 + 5,
+        speedX: Math.random() * 0.6 - 0.3,
+        speedY: Math.random() * 0.6 - 0.3,
+        rotation: 0
+      };
+    }
+    for (let i = 0; i < 30; i++) particles.push(createParticle());
+    function animateParticles() {
+      particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        p.rotation += 0.05;
+        if (p.x < 0 || p.x > particleCanvas.width) p.speedX *= -1;
+        if (p.y < 0 || p.y > particleCanvas.height) p.speedY *= -1;
+        particleCtx.save();
+        particleCtx.translate(p.x, p.y);
+        particleCtx.rotate(p.rotation);
+        particleCtx.beginPath();
+        particleCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        particleCtx.fillStyle = '#8fbc8f';
+        particleCtx.fill();
+        particleCtx.restore();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // Estadísticas animadas
+    function animateStats() {
+      const stats = [
+        { id: 'stat1', target: 1500, current: 0 },
+        { id: 'stat2', target: 5000, current: 0 },
+        { id: 'stat3', target: 80, current: 0 }
+      ];
+      stats.forEach(stat => {
+        const element = document.getElementById(stat.id);
+        const interval = setInterval(() => {
+          if (stat.current < stat.target) {
+            stat.current += Math.ceil(stat.target / 100);
+            element.textContent = stat.current;
+          } else {
+            element.textContent = stat.target;
+            clearInterval(interval);
+          }
+        }, 20);
+      });
+    }
+    window.addEventListener('scroll', () => {
+      if (document.getElementById('about').getBoundingClientRect().top < window.innerHeight) {
+        animateStats();
+      }
+    });
+  </script>
 </body>
 </html>
