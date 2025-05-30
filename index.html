@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        /* Aquí va el CSS */
         * {
             box-sizing: border-box;
         }
@@ -378,7 +379,7 @@
             gap: 15px;
             margin: 20px 0;
         }
-        .gallery video {
+        .gallery img {
             width: clamp(150px, 30vw, 200px);
             height: clamp(100px, 20vw, 150px);
             object-fit: cover;
@@ -388,12 +389,12 @@
             opacity: 0;
             animation: slideUpFade 1s ease-in forwards;
         }
-        .gallery video:hover {
+        .gallery img:hover {
             transform: scale(1.1);
         }
-        .gallery video:nth-child(1) { animation-delay: 0.2s; }
-        .gallery video:nth-child(2) { animation-delay: 0.4s; }
-        .gallery video:nth-child(3) { animation-delay: 0.6s; }
+        .gallery img:nth-child(1) { animation-delay: 0.2s; }
+        .gallery img:nth-child(2) { animation-delay: 0.4s; }
+        .gallery img:nth-child(3) { animation-delay: 0.6s; }
         .contact-form {
             display: flex;
             flex-direction: column;
@@ -529,7 +530,7 @@
                 width: 90%;
                 font-size: clamp(12px, 4vw, 14px);
             }
-            .gallery video {
+            .gallery img {
                 width: 100%;
                 height: auto;
             }
@@ -551,10 +552,27 @@
         @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes slideInLeft { from { transform: translateX(-50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideInRight { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Estilos para la etiqueta de categoría sobre la imagen/video */
+        #categoryLabel {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 2.5em; /* Visible en grande */
+            font-weight: bold;
+            display: none; /* Oculto por defecto */
+            z-index: 50; /* Asegura que esté sobre el canvas */
+            white-space: nowrap;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-  <!-- Fondos de olas -->
   <div class="wave-background bottom-waves">
     <div class="wave"></div>
     <div class="wave"></div>
@@ -567,7 +585,6 @@
   </div>
   <canvas id="particles"></canvas>
 
-  <!-- Navbar -->
   <div class="navbar" id="navbar">
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <a class="zoom-on-hover" onclick="scrollToSection('home')">Inicio</a>
@@ -577,14 +594,13 @@
   </div>
   <button class="toggle-dark zoom-on-hover" onclick="toggleDarkMode()">🌙</button>
 
-  <!-- Sección Home -->
   <div id="home" class="section">
     <h1>VisionAI</h1>
     <p>Clasifica tus residuos de forma inteligente</p>
     <div class="media-container" style="position: relative; display: inline-block;">
       <video id="video" autoplay muted playsinline style="display: block; width: 100%; max-width: 640px; height: auto;"></video>
-      <canvas id="canvas" style="position: absolute; top: 0; left: 0; display: block;"></canvas>
-    </div>
+      <canvas id="canvas" style="position: absolute; top: 0; left: 0;"></canvas>
+      <div id="categoryLabel"></div> </div>
     <div class="btn-container">
       <button class="btn zoom-on-hover" onclick="startCamera()" style="background-color: #4285f4;">
         <i class="material-icons">videocam</i> Iniciar Cámara
@@ -599,14 +615,13 @@
     </div>
     <div class="loader" id="loader" style="display: none;">Cargando modelo...</div>
     <div class="history" id="history">
-      <h3>Historial de Análisis 
+      <h3>Historial de Análisis de Imágenes Subidas
         <button class="btn zoom-on-hover" style="float: right; padding: 8px 16px;" onclick="clearHistory()">Borrar</button>
       </h3>
       <ul id="history-list"></ul>
     </div>
   </div>
 
-  <!-- Sección Sobre Nosotros -->
   <div id="about" class="section">
     <h2>Sobre Nosotros</h2>
     <p>VisionAI es una herramienta innovadora para clasificar residuos y fomentar el reciclaje. Nuestra misión es reducir el impacto ambiental mediante tecnología inteligente y educación ambiental.</p>
@@ -623,14 +638,13 @@
     </div>
   </div>
 
-  <!-- Sección Cómo Funciona -->
   <div id="howto" class="section">
     <h2>Cómo Funciona</h2>
     <p>Sigue estos pasos para clasificar tus residuos:</p>
     <ol style="text-align: left; max-width: 600px; margin: 20px auto;">
-      <li>Inicia la cámara o sube una imagen.</li>
-      <li>Captura el residuo que deseas analizar.</li>
-      <li>Observa el análisis en tiempo real en la cámara.</li>
+      <li>Inicia la cámara para detección en tiempo real o sube una imagen.</li>
+      <li>Para la cámara, posiciona el objeto en el encuadre para verlo clasificado.</li>
+      <li>Para imágenes, sube el archivo y mira su clasificación.</li>
     </ol>
     <div class="gallery">
       <img src="plastico.jpg" alt="Plástico" class="zoom-on-hover">
@@ -658,7 +672,6 @@
     </table>
   </div>
 
-  <!-- Sección Contacto -->
   <div id="contact" class="section">
     <h2>Contacto</h2>
     <p>¿Tienes preguntas? ¡Contáctanos!</p>
@@ -671,7 +684,6 @@
     <div class="success-message" id="success-message" style="display: none;">¡Mensaje enviado con éxito!</div>
   </div>
 
-  <!-- Modal de Resultado -->
   <div id="result-modal">
     <div class="modal-content">
       <h2>Resultado del Análisis</h2>
@@ -680,18 +692,15 @@
     </div>
   </div>
 
-  <!-- Botón de ayuda -->
   <button class="help-btn zoom-on-hover">
     <i class="material-icons">help_outline</i>
     <span class="help-tooltip">Usa la cámara o sube una imagen para clasificar residuos.</span>
   </button>
 
-  <!-- Footer -->
   <div class="footer">
     <p>© 2025 VisionAI. Todos los derechos reservados.</p>
   </div>
 
-  <!-- Librerías externas -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 
@@ -701,22 +710,989 @@
   const ctx = canvas.getContext('2d');
   const loader = document.getElementById('loader');
   const stopCameraButton = document.getElementById('stopCamera');
+  const categoryLabel = document.getElementById('categoryLabel'); // Nueva etiqueta para la categoría principal
+  const resultModal = document.getElementById('result-modal');
+  const resultText = document.getElementById('result-text');
+  const historyList = document.getElementById('history-list');
   let model = null;
+  let animationFrameId = null; // Para manejar el bucle de requestAnimationFrame
 
-  // Mapeo de clases a categorías de reciclaje
-  const recyclingCategories = {
-    'bottle': 'reciclable',
-    'cup': 'reciclable',
-    'can': 'reciclable',
+  // Aquí van las categorías de reciclaje
+ const recyclingCategories = {
+    'bottle': 'reciclable (plástico o vidrio)',
+    'cup': 'reciclable (plástico o papel)',
+    'can': 'reciclable (metal)',
+    'bowl': 'no reciclable (si es cerámica/vidrio roto) / reciclable (si es de plástico limpio)',
+    'plate': 'no reciclable (si es cerámica/vidrio roto) / reciclable (si es de plástico limpio)',
+    'fork': 'no reciclable (plástico un solo uso) / reciclable (metal)',
+    'spoon': 'no reciclable (plástico un solo uso) / reciclable (metal)',
+    'knife': 'no reciclable (plástico un solo uso) / reciclable (metal)',
     'apple': 'orgánico',
     'banana': 'orgánico',
     'orange': 'orgánico',
-    'sandwich': 'orgánico',
-    'plastic bag': 'no reciclable'
+    'broccoli': 'orgánico',
+    'carrot': 'orgánico',
+    'pizza': 'orgánico (restos de comida)',
+    'donut': 'orgánico (restos de comida)',
+    'cake': 'orgánico (restos de comida)',
+    'sandwich': 'orgánico (restos de comida)',
+    'hot dog': 'orgánico (restos de comida)',
+    'toilet': 'no reciclable (sanitario)',
+    'couch': 'no reciclable (mueble voluminoso)',
+    'bed': 'no reciclable (mueble voluminoso)',
+    'chair': 'reciclable (si es de madera/metal simple) / no reciclable (variado)',
+    'tv': 'no reciclable (RAEE)',
+    'laptop': 'no reciclable (RAEE)',
+    'cell phone': 'no reciclable (RAEE)',
+    'keyboard': 'no reciclable (RAEE)',
+    'mouse': 'no reciclable (RAEE)',
+    'remote': 'no reciclable (RAEE)',
+    'microwave': 'no reciclable (RAEE)',
+    'oven': 'no reciclable (RAEE)',
+    'sink': 'no reciclable (construcción)',
+    'refrigerator': 'no reciclable (RAEE)',
+    'book': 'reciclable (papel)',
+    'potted plant': 'orgánico (planta) / reciclable (maceta si es de plástico/cerámica)',
+    'backpack': 'no reciclable (textil/plástico mezclado)',
+    'handbag': 'no reciclable (textil/cuero)',
+    'tie': 'reciclable (textil si es algodón/lana) / no reciclable (mezclado)',
+    'suitcase': 'no reciclable (variado)',
+    'frisbee': 'reciclable (plástico) / no reciclable (si es de goma)',
+    'skis': 'no reciclable (deporte)',
+    'baseball bat': 'reciclable (madera) / no reciclable (compuesto)',
+    'baseball glove': 'no reciclable (cuero)',
+    'surfboard': 'no reciclable (deporte)',
+    'tennis racket': 'no reciclable (deporte)',
+    'umbrella': 'no reciclable (mezclado)',
+    'fire hydrant': 'reciclable (metal grande)',
+    'stop sign': 'reciclable (metal grande)',
+    'parking meter': 'reciclable (metal grande)',
+    'bench': 'reciclable (madera/metal) / no reciclable (compuesto)',
+    'traffic light': 'no reciclable (electrónica)',
+    'fire hose': 'no reciclable (textil/goma)',
+    'clothing': 'reciclable (textil limpio) / no reciclable (textil sucio/mezclado)',
+    'paper': 'reciclable (papel)',
+    'cardboard': 'reciclable (cartón)',
+    'plastic bag': 'no reciclable (plástico film)',
+    'trash can': 'no reciclable (depende del material)',
+    'fridge': 'no reciclable (RAEE)',
+    'remote': 'no reciclable (RAEE)',
+    'mouse': 'no reciclable (RAEE)',
+    'keyboard': 'no reciclable (RAEE)',
+    'scissors': 'reciclable (metal) / no reciclable (plástico/mixto)',
+    'toothbrush': 'no reciclable (plástico mixto)',
+    'hair drier': 'no reciclable (RAEE)',
+    'teddy bear': 'no reciclable (textil)',
+    'wine glass': 'reciclable (vidrio)',
+    'beer bottle': 'reciclable (vidrio)',
+    'soda can': 'reciclable (metal)',
+    'battery': 'no reciclable (desecho peligroso)',
+    'light bulb': 'no reciclable (desecho peligroso)',
+    'fluorescent light': 'no reciclable (desecho peligroso)',
+    'tire': 'no reciclable (desecho especial)',
+    'bicycle': 'reciclable (metal)',
+    'desk': 'reciclable (madera/metal) / no reciclable (mixto)',
+    'table': 'reciclable (madera/metal) / no reciclable (mixto)',
+    'sofa': 'no reciclable (mueble voluminoso)',
+    'cabinet': 'reciclable (madera/metal) / no reciclable (mixto)',
+    'shelf': 'reciclable (madera/metal) / no reciclable (mixto)',
+    'plant': 'orgánico (si es planta) / no reciclable (maceta si no es reciclable)',
+    'flower': 'orgánico',
+    'light': 'no reciclable (RAEE)',
+    'fan': 'no reciclable (RAEE)',
+    'toaster': 'no reciclable (RAEE)',
+    'blender': 'no reciclable (RAEE)',
+    'clock': 'no reciclable (RAEE o mixto)',
+    'vase': 'reciclable (vidrio/cerámica)',
+    'pen': 'no reciclable (plástico/mixto)',
+    'pencil': 'orgánico (madera) / no reciclable (si tiene borrador/mina)',
+    'eraser': 'no reciclable (goma)',
+    'toy': 'no reciclable (plástico mixto) / reciclable (si es de madera simple)',
+    'doll': 'no reciclable (plástico/textil)',
+    'stuffed animal': 'no reciclable (textil)',
+    'wallet': 'no reciclable (cuero/textil)',
+    'coin': 'reciclable (metal)',
+    'box': 'reciclable (cartón) / no reciclable (si está encerado o sucio)',
+    'bag': 'reciclable (papel) / no reciclable (plástico o mixto)',
+    'magazine': 'reciclable (papel)',
+    'newspaper': 'reciclable (papel)',
+    'jar': 'reciclable (vidrio)',
+    'tin can': 'reciclable (metal)',
+    'aluminum foil': 'reciclable (metal)',
+    'plastic container': 'reciclable (plástico)',
+    'food wrapper': 'no reciclable (plástico mezclado)',
+    'styrofoam': 'no reciclable',
+    'medical waste': 'no reciclable (peligroso)',
+    'diaper': 'no reciclable',
+    'ceramic': 'no reciclable (material inerte)',
+    'glass shard': 'no reciclable (peligroso, no para reciclaje común)',
+    'broken glass': 'no reciclable (peligroso, no para reciclaje común)',
+    'textile scrap': 'reciclable (si es algodón/lana limpio) / no reciclable (mezclado)',
+    'wood scrap': 'orgánico (si no tratado) / no reciclable (tratado)',
+    'metal scrap': 'reciclable (metal)',
+    'electronic waste': 'no reciclable (RAEE)',
+    'carton': 'reciclable (envase de bebida, si es limpio)',
+    'milk carton': 'reciclable (envase de bebida, si es limpio)',
+    'juice box': 'reciclable (envase de bebida, si es limpio)',
+    'egg carton': 'reciclable (papel) / orgánico (si es de celulosa y está sucio)',
+    'plastic film': 'no reciclable',
+    'bubble wrap': 'no reciclable',
+    'plastic wrapper': 'no reciclable',
+    'plastic cap': 'reciclable (plástico)',
+    'cork': 'orgánico (natural) / no reciclable (sintético)',
+    'coffee grounds': 'orgánico',
+    'tea bag': 'orgánico (si es solo tela) / no reciclable (con grapas o sintético)',
+    'vegetable peel': 'orgánico',
+    'fruit peel': 'orgánico',
+    'bones': 'orgánico',
+    'paper towel': 'orgánico (si está sucio) / no reciclable (limpio)',
+    'napkin': 'orgánico (si está sucio) / no reciclable (limpio)',
+    'cotton swab': 'no reciclable',
+    'razor': 'no reciclable (metal/plástico mixto)',
+    'aerosol can': 'reciclable (metal, si está vacío y sin presión)',
+    'paint can': 'no reciclable (desecho peligroso)',
+    'chemical container': 'no reciclable (desecho peligroso)',
+    'syringes': 'no reciclable (desecho peligroso)',
+    'gloves': 'no reciclable (látex/goma)',
+    'mask': 'no reciclable (sanitario)',
+    'fabric': 'reciclable (textil limpio) / no reciclable (mezclado)',
+    'rope': 'reciclable (fibra natural) / no reciclable (sintético)',
+    'shoes': 'no reciclable (mezclado)',
+    'slipper': 'no reciclable (textil/goma)',
+    'boot': 'no reciclable (cuero/goma)',
+    'helmet': 'no reciclable (plástico/compuesto)',
+    'goggles': 'reciclable (plástico) / no reciclable (mixto)',
+    'lighter': 'no reciclable (peligroso)',
+    'matches': 'orgánico (madera) / no reciclable (caja)',
+    'lighter fluid': 'no reciclable (peligroso)',
+    'charcoal': 'orgánico',
+    'ash': 'no reciclable',
+    'dust': 'orgánico',
+    'dirt': 'orgánico (si es solo tierra)',
+    'gravel': 'no reciclable (inerte)',
+    'sand': 'no reciclable (inerte)',
+    'concrete': 'no reciclable (construcción)',
+    'brick': 'no reciclable (construcción)',
+    'tile': 'no reciclable (construcción)',
+    'insulation': 'no reciclable (construcción)',
+    'pipes': 'reciclable (metal/plástico)',
+    'wires': 'reciclable (metal)',
+    'cables': 'reciclable (metal)',
+    'circuit board': 'no reciclable (RAEE)',
+    'speaker': 'no reciclable (RAEE)',
+    'headphones': 'no reciclable (RAEE)',
+    'earbuds': 'no reciclable (RAEE)',
+    'charger': 'no reciclable (RAEE)',
+    'power adapter': 'no reciclable (RAEE)',
+    'extension cord': 'no reciclable (RAEE)',
+    'router': 'no reciclable (RAEE)',
+    'modem': 'no reciclable (RAEE)',
+    'printer': 'no reciclable (RAEE)',
+    'scanner': 'no reciclable (RAEE)',
+    'fax machine': 'no reciclable (RAEE)',
+    'copy machine': 'no reciclable (RAEE)',
+    'projector': 'no reciclable (RAEE)',
+    'camera': 'no reciclable (RAEE)',
+    'camcorder': 'no reciclable (RAEE)',
+    'dvd player': 'no reciclable (RAEE)',
+    'vcr': 'no reciclable (RAEE)',
+    'game console': 'no reciclable (RAEE)',
+    'joystick': 'no reciclable (RAEE)',
+    'controller': 'no reciclable (RAEE)',
+    'microphone': 'no reciclable (RAEE)',
+    'speaker': 'no reciclable (RAEE)',
+    'amplifier': 'no reciclable (RAEE)',
+    'radio': 'no reciclable (RAEE)',
+    'walkie-talkie': 'no reciclable (RAEE)',
+    'gps': 'no reciclable (RAEE)',
+    'smartwatch': 'no reciclable (RAEE)',
+    'fitness tracker': 'no reciclable (RAEE)',
+    'drone': 'no reciclable (RAEE)',
+    'robot': 'no reciclable (RAEE)',
+    'solar panel': 'no reciclable (RAEE)',
+    'wind turbine': 'no reciclable (grandes componentes)',
+    'electric vehicle battery': 'no reciclable (peligroso, manejo especial)',
+    'light fixture': 'no reciclable (RAEE)',
+    'fan blade': 'no reciclable (plástico/metal)',
+    'motor': 'reciclable (metal) / no reciclable (aceites)',
+    'pump': 'reciclable (metal) / no reciclable (aceites)',
+    'valves': 'reciclable (metal)',
+    'pipes': 'reciclable (metal/plástico)',
+    'faucet': 'reciclable (metal)',
+    'shower head': 'reciclable (metal/plástico)',
+    'toilet paper roll': 'reciclable (cartón)',
+    'paper bag': 'reciclable (papel)',
+    'cereal box': 'reciclable (cartón)',
+    'shoe box': 'reciclable (cartón)',
+    'pizza box': 'orgánico (si está sucio de grasa) / reciclable (si está limpio)',
+    'medicine bottle': 'no reciclable (plástico contaminado) / reciclable (vidrio limpio)',
+    'perfume bottle': 'reciclable (vidrio)',
+    'shampoo bottle': 'reciclable (plástico)',
+    'detergent bottle': 'reciclable (plástico)',
+    'bleach bottle': 'no reciclable (químicos)',
+    'cleaning supply bottle': 'no reciclable (químicos)',
+    'paint can': 'no reciclable (peligroso)',
+    'motor oil bottle': 'no reciclable (peligroso)',
+    'antifreeze bottle': 'no reciclable (peligroso)',
+    'pesticide bottle': 'no reciclable (peligroso)',
+    'herbicide bottle': 'no reciclable (peligroso)',
+    'fertilizer bag': 'no reciclable (plástico mixto)',
+    'seed packet': 'reciclable (papel) / no reciclable (plástico)',
+    'gardening tools': 'reciclable (metal) / no reciclable (madera/plástico)',
+    'flower pot': 'reciclable (plástico/cerámica) / no reciclable (terracota)',
+    'watering can': 'reciclable (plástico/metal)',
+    'garden hose': 'no reciclable (goma/plástico)',
+    'shovel': 'reciclable (metal/madera)',
+    'rake': 'reciclable (metal/madera)',
+    'hoe': 'reciclable (metal/madera)',
+    'axe': 'reciclable (metal/madera)',
+    'hammer': 'reciclable (metal/madera)',
+    'screwdriver': 'reciclable (metal/plástico)',
+    'wrench': 'reciclable (metal)',
+    'pliers': 'reciclable (metal)',
+    'tape measure': 'reciclable (metal/plástico)',
+    'level': 'reciclable (metal/plástico)',
+    'saw': 'reciclable (metal/madera)',
+    'drill': 'no reciclable (RAEE)',
+    'power drill': 'no reciclable (RAEE)',
+    'sander': 'no reciclable (RAEE)',
+    'grinder': 'no reciclable (RAEE)',
+    'jigsaw': 'no reciclable (RAEE)',
+    'circular saw': 'no reciclable (RAEE)',
+    'lawn mower': 'no reciclable (motor)',
+    'leaf blower': 'no reciclable (motor)',
+    'weed trimmer': 'no reciclable (motor)',
+    'chainsaw': 'no reciclable (motor)',
+    'pressure washer': 'no reciclable (motor)',
+    'snow blower': 'no reciclable (motor)',
+    'grill': 'reciclable (metal)',
+    'propane tank': 'no reciclable (peligroso, requiere manejo especial)',
+    'picnic basket': 'no reciclable (mimbre/plástico)',
+    'cooler': 'no reciclable (plástico)',
+    'beach chair': 'reciclable (metal/tela) / no reciclable (variado)',
+    'tent': 'no reciclable (tela/metal mixto)',
+    'sleeping bag': 'no reciclable (textil)',
+    'camping stove': 'reciclable (metal) / no reciclable (combustible)',
+    'lantern': 'reciclable (metal/vidrio) / no reciclable (pilas)',
+    'flashlight': 'reciclable (metal/plástico) / no reciclable (pilas)',
+    'matches': 'orgánico (madera) / no reciclable (caja)',
+    'lighter': 'no reciclable (peligroso)',
+    'first aid kit': 'no reciclable (mixto)',
+    'bandages': 'no reciclable (sanitario)',
+    'medicine': 'no reciclable (farmacéutico)',
+    'syrup bottle': 'reciclable (vidrio/plástico) / no reciclable (remanentes)',
+    'pill bottle': 'no reciclable (plástico contaminado)',
+    'toothbrush': 'no reciclable (plástico mixto)',
+    'toothpaste tube': 'no reciclable (plástico/metal laminado)',
+    'shaving cream can': 'reciclable (metal, si está vacío)',
+    'razor blade': 'no reciclable (peligroso)',
+    'shaving brush': 'no reciclable (natural/sintético)',
+    'soap bar': 'orgánico (biodegradable) / no reciclable (envoltura)',
+    'liquid soap bottle': 'reciclable (plástico)',
+    'cotton balls': 'orgánico (algodón) / no reciclable (sintético)',
+    'q-tips': 'no reciclable',
+    'feminine hygiene products': 'no reciclable (sanitario)',
+    'contact lens case': 'no reciclable (plástico)',
+    'eyeglass case': 'reciclable (plástico/metal) / no reciclable (cuero)',
+    'sunglasses': 'no reciclable (plástico/metal mixto)',
+    'reading glasses': 'no reciclable (plástico/metal mixto)',
+    'makeup container': 'no reciclable (plástico/vidrio, mezclado)',
+    'lipstick tube': 'no reciclable (plástico/metal)',
+    'mascara tube': 'no reciclable (plástico)',
+    'nail polish bottle': 'no reciclable (peligroso)',
+    'perfume bottle': 'reciclable (vidrio)',
+    'hairspray can': 'reciclable (metal, si está vacío)',
+    'deodorant stick': 'reciclable (plástico) / no reciclable (mixto)',
+    'lotion bottle': 'reciclable (plástico)',
+    'mouthwash bottle': 'reciclable (plástico)',
+    'dental floss container': 'reciclable (plástico) / no reciclable (hilo)',
+    'brush': 'no reciclable (plástico/madera)',
+    'comb': 'reciclable (plástico) / no reciclable (madera)',
+    'hair dryer': 'no reciclable (RAEE)',
+    'curling iron': 'no reciclable (RAEE)',
+    'straightener': 'no reciclable (RAEE)',
+    'electric toothbrush': 'no reciclable (RAEE)',
+    'electric shaver': 'no reciclable (RAEE)',
+    'epilator': 'no reciclable (RAEE)',
+    'electric razor': 'no reciclable (RAEE)',
+    'scale': 'no reciclable (RAEE) / reciclable (metal)',
+    'thermometer': 'no reciclable (peligroso, si es de mercurio)',
+    'blood pressure monitor': 'no reciclable (RAEE)',
+    'glucose meter': 'no reciclable (RAEE)',
+    'nebulizer': 'no reciclable (RAEE)',
+    'cpap machine': 'no reciclable (RAEE)',
+    'hearing aid': 'no reciclable (RAEE)',
+    'glasses': 'no reciclable (plástico/metal mixto)',
+    'contact lenses': 'no reciclable (plástico/biológico)',
+    'syringes': 'no reciclable (peligroso)',
+    'needles': 'no reciclable (peligroso)',
+    'medicine packaging': 'no reciclable (mezclado)',
+    'blister pack': 'no reciclable (plástico/aluminio)',
+    'pill blister pack': 'no reciclable (plástico/aluminio)',
+    'vial': 'reciclable (vidrio) / no reciclable (plástico médico)',
+    'ampoule': 'reciclable (vidrio)',
+    'medical tube': 'no reciclable (plástico médico)',
+    'gloves': 'no reciclable (látex/goma)',
+    'face mask': 'no reciclable (sanitario)',
+    'disposable mask': 'no reciclable (sanitario)',
+    'respirator': 'no reciclable (sanitario)',
+    'wipes': 'no reciclable (textil no degradable)',
+    'baby wipes': 'no reciclable (textil no degradable)',
+    'cleaning wipes': 'no reciclable (textil no degradable)',
+    'sponges': 'no reciclable (sintético) / orgánico (natural)',
+    'scrub brush': 'no reciclable (plástico/madera)',
+    'mop': 'no reciclable (textil/madera)',
+    'bucket': 'reciclable (plástico)',
+    'broom': 'no reciclable (plástico/madera)',
+    'dustpan': 'reciclable (plástico) / no reciclable (metal)',
+    'vacuum cleaner': 'no reciclable (RAEE)',
+    'robot vacuum': 'no reciclable (RAEE)',
+    'iron': 'no reciclable (RAEE)',
+    'ironing board': 'no reciclable (metal/tela)',
+    'sewing machine': 'no reciclable (RAEE)',
+    'fabric scraps': 'reciclable (textil limpio) / no reciclable (mezclado)',
+    'thread': 'orgánico (natural) / no reciclable (sintético)',
+    'buttons': 'no reciclable (plástico/metal)',
+    'zippers': 'no reciclable (metal/plástico)',
+    'needles': 'no reciclable (metal)',
+    'pins': 'no reciclable (metal)',
+    'tape': 'no reciclable (plástico)',
+    'glue bottle': 'reciclable (plástico, si vacío) / no reciclable (pegamento)',
+    'marker': 'no reciclable (plástico/tinta)',
+    'highlighter': 'no reciclable (plástico/tinta)',
+    'paint brush': 'no reciclable (madera/cerda) / reciclable (metal)',
+    'palette': 'no reciclable (plástico/madera)',
+    'crayons': 'no reciclable (cera)',
+    'play-doh': 'orgánico (masa)',
+    'modeling clay': 'no reciclable (sintético)',
+    'slime': 'no reciclable (polímero)',
+    'toy car': 'reciclable (metal) / no reciclable (plástico mixto)',
+    'building blocks': 'reciclable (plástico) / no reciclable (madera)',
+    'puzzle': 'reciclable (cartón) / no reciclable (madera)',
+    'board game': 'reciclable (cartón) / no reciclable (plástico)',
+    'playing cards': 'reciclable (papel) / no reciclable (plástico)',
+    'dice': 'no reciclable (plástico)',
+    'dominoes': 'reciclable (madera) / no reciclable (plástico)',
+    'jigsaw puzzle': 'reciclable (cartón)',
+    'action figure': 'no reciclable (plástico mixto)',
+    'barbie doll': 'no reciclable (plástico/tela)',
+    'stuffed animal': 'no reciclable (textil)',
+    'toy train': 'reciclable (metal) / no reciclable (plástico mixto)',
+    'toy airplane': 'reciclable (metal) / no reciclable (plástico mixto)',
+    'toy boat': 'reciclable (plástico) / no reciclable (madera)',
+    'ball': 'no reciclable (goma/plástico)',
+    'frisbee': 'reciclable (plástico)',
+    'jump rope': 'no reciclable (cuerda/madera)',
+    'hula hoop': 'reciclable (plástico)',
+    'roller skates': 'no reciclable (mixto)',
+    'skateboard': 'no reciclable (madera/metal)',
+    'scooter': 'no reciclable (metal/plástico)',
+    'bicycle helmet': 'no reciclable (plástico/espuma)',
+    'knee pads': 'no reciclable (plástico/textil)',
+    'elbow pads': 'no reciclable (plástico/textil)',
+    'sports ball': 'no reciclable (goma/cuero)',
+    'baseball': 'no reciclable (cuero/corcho)',
+    'basketball': 'no reciclable (goma/cuero)',
+    'football': 'no reciclable (cuero/sintético)',
+    'soccer ball': 'no reciclable (cuero/sintético)',
+    'tennis ball': 'no reciclable (goma/fieltro)',
+    'golf ball': 'no reciclable (plástico/goma)',
+    'bowling ball': 'no reciclable (plástico)',
+    'pool cue': 'reciclable (madera)',
+    'billiard ball': 'no reciclable (resina)',
+    'dartboard': 'no reciclable (madera/sisal)',
+    'darts': 'no reciclable (metal/plástico)',
+    'fishing rod': 'no reciclable (fibra de vidrio/metal)',
+    'fishing reel': 'no reciclable (metal/plástico)',
+    'fishing line': 'no reciclable (nylon)',
+    'fishing lure': 'no reciclable (plástico/metal)',
+    'tent': 'no reciclable (tela/metal)',
+    'sleeping bag': 'no reciclable (textil)',
+    'camping chair': 'reciclable (metal/tela) / no reciclable (variado)',
+    'cooler': 'no reciclable (plástico)',
+    'grill': 'reciclable (metal)',
+    'charcoal bag': 'no reciclable (plástico/papel)',
+    'lighter fluid bottle': 'no reciclable (peligroso)',
+    'matches': 'orgánico (madera) / no reciclable (caja)',
+    'firewood': 'orgánico (madera)',
+    'fire pit': 'reciclable (metal)',
+    'bug spray': 'no reciclable (químicos)',
+    'sunscreen bottle': 'reciclable (plástico) / no reciclable (remanentes)',
+    'insect repellent': 'no reciclable (químicos)',
+    'pool noodle': 'no reciclable (espuma)',
+    'swim goggles': 'reciclable (plástico)',
+    'swim cap': 'no reciclable (silicona/látex)',
+    'swimsuit': 'no reciclable (textil sintético)',
+    'beach towel': 'reciclable (textil) / no reciclable (si está muy dañado)',
+    'sandals': 'no reciclable (goma/plástico)',
+    'flip-flops': 'no reciclable (goma/plástico)',
+    'beach bag': 'no reciclable (textil/plástico)',
+    'sunglasses': 'no reciclable (plástico/metal mixto)',
+    'hat': 'reciclable (tela/papel) / no reciclable (mixto)',
+    'towel': 'reciclable (tela) / no reciclable (si está muy dañado)',
+    'blanket': 'reciclable (tela) / no reciclable (si está muy dañado)',
+    'pillow': 'no reciclable (relleno/tela)',
+    'bedding': 'reciclable (tela) / no reciclable (si está muy dañado)',
+    'curtains': 'reciclable (tela) / no reciclable (si está muy dañado)',
+    'rug': 'no reciclable (textil/plástico)',
+    'carpet': 'no reciclable (textil/plástico)',
+    'door mat': 'no reciclable (goma/fibra)',
+    'plant pot': 'reciclable (plástico/cerámica) / no reciclable (terracota)',
+    'gardening gloves': 'no reciclable (tela/goma)',
+    'seedlings': 'orgánico',
+    'soil bag': 'no reciclable (plástico)',
+    'compost bin': 'reciclable (plástico) / no reciclable (metal)',
+    'rain barrel': 'reciclable (plástico)',
+    'hose': 'no reciclable (goma/plástico)',
+    'sprinkler': 'reciclable (plástico/metal)',
+    'bird feeder': 'reciclable (plástico/madera) / no reciclable (mixto)',
+    'bird bath': 'reciclable (cerámica/hormigón) / no reciclable (piedra)',
+    'garden gnome': 'no reciclable (resina/cerámica)',
+    'fountain': 'no reciclable (plástico/piedra)',
+    'statue': 'reciclable (metal) / no reciclable (piedra/resina)',
+    'bench': 'reciclable (madera/metal)',
+    'picnic table': 'reciclable (madera/metal)',
+    'swing set': 'reciclable (metal/madera) / no reciclable (plástico)',
+    'slide': 'reciclable (plástico) / no reciclable (metal)',
+    'sandbox': 'reciclable (madera/plástico)',
+    'sandbox toys': 'reciclable (plástico)',
+    'wagon': 'reciclable (metal/madera) / no reciclable (plástico)',
+    'tricycle': 'reciclable (metal/plástico)',
+    'stroller': 'no reciclable (metal/tela/plástico)',
+    'baby car seat': 'no reciclable (plástico/tela)',
+    'high chair': 'reciclable (metal/plástico) / no reciclable (madera)',
+    'baby bottle': 'reciclable (plástico/vidrio) / no reciclable (tetina)',
+    'pacifier': 'no reciclable (silicona/plástico)',
+    'baby wipes container': 'reciclable (plástico)',
+    'diaper pail': 'reciclable (plástico)',
+    'crib': 'reciclable (madera/metal) / no reciclable (plástico)',
+    'changing table': 'reciclable (madera/metal) / no reciclable (plástico)',
+    'playpen': 'reciclable (metal/tela) / no reciclable (plástico)',
+    'baby monitor': 'no reciclable (RAEE)',
+    'breast pump': 'no reciclable (RAEE)',
+    'baby food jar': 'reciclable (vidrio)',
+    'baby food pouch': 'no reciclable (plástico laminado)',
+    'baby formula can': 'reciclable (metal)',
+    'baby formula container': 'reciclable (plástico)',
+    'baby clothes': 'reciclable (textil limpio) / no reciclable (sucio/dañado)',
+    'baby shoes': 'no reciclable (textil/cuero)',
+    'baby blankets': 'reciclable (textil) / no reciclable (si está muy dañado)',
+    'baby toys': 'reciclable (plástico/madera) / no reciclable (mixto)',
+    'rattle': 'reciclable (plástico)',
+    'teether': 'no reciclable (silicona/goma)',
+    'mobile': 'reciclable (plástico) / no reciclable (mixto)',
+    'swing': 'no reciclable (metal/plástico)',
+    'bouncer': 'no reciclable (metal/plástico/tela)',
+    'walker': 'no reciclable (plástico/metal)',
+    'potty training seat': 'reciclable (plástico)',
+    'step stool': 'reciclable (plástico/madera)',
+    'safety gate': 'reciclable (metal/madera) / no reciclable (plástico)',
+    'outlet cover': 'reciclable (plástico)',
+    'door stopper': 'no reciclable (goma)',
+    'cabinet lock': 'reciclable (plástico) / no reciclable (metal)',
+    'corner guard': 'no reciclable (espuma)',
+    'baby proofing items': 'reciclable (plástico) / no reciclable (mixto)',
+    'fire extinguisher': 'no reciclable (peligroso, manejo especial)',
+    'smoke detector': 'no reciclable (RAEE)',
+    'carbon monoxide detector': 'no reciclable (RAEE)',
+    'first aid supplies': 'no reciclable (sanitario)',
+    'band-aids': 'no reciclable (sanitario)',
+    'gauze': 'no reciclable (sanitario)',
+    'antiseptic wipes': 'no reciclable (sanitario)',
+    'rubbing alcohol bottle': 'reciclable (plástico) / no reciclable (líquido)',
+    'peroxide bottle': 'reciclable (plástico) / no reciclable (líquido)',
+    'cotton balls': 'orgánico (algodón) / no reciclable (sintético)',
+    'tweezers': 'reciclable (metal)',
+    'thermometer': 'no reciclable (peligroso, si es de mercurio)',
+    'heating pad': 'no reciclable (eléctrico)',
+    'ice pack': 'no reciclable (gel/plástico)',
+    'hot water bottle': 'reciclable (goma/plástico)',
+    'cane': 'reciclable (metal/madera)',
+    'crutches': 'reciclable (metal)',
+    'walker': 'reciclable (metal)',
+    'wheelchair': 'reciclable (metal) / no reciclable (tela/goma)',
+    'walker (medical)': 'reciclable (metal)',
+    'commode': 'no reciclable (plástico/metal)',
+    'bedpan': 'reciclable (plástico)',
+    'urinal': 'reciclable (plástico)',
+    'catheter bag': 'no reciclable (sanitario)',
+    'ostomy bag': 'no reciclable (sanitario)',
+    'adult diaper': 'no reciclable (sanitario)',
+    'medical tubing': 'no reciclable (plástico médico)',
+    'sharps container': 'no reciclable (peligroso)',
+    'prescription bottle': 'no reciclable (plástico contaminado)',
+    'over-the-counter medicine bottle': 'reciclable (vidrio/plástico limpio)',
+    'pill bottle': 'no reciclable (plástico contaminado)',
+    'vitamin bottle': 'reciclable (plástico/vidrio)',
+    'supplement bottle': 'reciclable (plástico/vidrio)',
+    'herbal supplement bottle': 'reciclable (plástico/vidrio)',
+    'tea bags (used)': 'orgánico',
+    'coffee grounds (used)': 'orgánico',
+    'egg shells': 'orgánico',
+    'fruit pits': 'orgánico',
+    'vegetable scraps': 'orgánico',
+    'meat scraps': 'orgánico',
+    'bones': 'orgánico',
+    'dairy products (spoiled)': 'orgánico',
+    'bread (stale)': 'orgánico',
+    'pasta (cooked)': 'orgánico',
+    'rice (cooked)': 'orgánico',
+    'grains (cooked)': 'orgánico',
+    'nuts (shells)': 'orgánico',
+    'seeds': 'orgánico',
+    'leaves': 'orgánico',
+    'grass clippings': 'orgánico',
+    'small branches': 'orgánico',
+    'flowers (wilted)': 'orgánico',
+    'potting soil': 'orgánico',
+    'wood chips': 'orgánico',
+    'sawdust': 'orgánico',
+    'paper towels (dirty)': 'orgánico (si no tienen químicos)',
+    'napkins (dirty)': 'orgánico (si no tienen químicos)',
+    'coffee filters (used)': 'orgánico',
+    'tea bags (used)': 'orgánico',
+    'pizza box (greasy)': 'orgánico',
+    'waxed paper': 'no reciclable',
+    'parchment paper': 'no reciclable',
+    'aluminum foil (dirty)': 'no reciclable',
+    'plastic cutlery': 'no reciclable',
+    'straws': 'no reciclable',
+    'plastic wrap': 'no reciclable',
+    'chip bags': 'no reciclable (plástico laminado)',
+    'candy wrappers': 'no reciclable (plástico laminado)',
+    'plastic bags (thin film)': 'no reciclable',
+    'bubble wrap': 'no reciclable',
+    'styrofoam containers': 'no reciclable',
+    'packing peanuts': 'no reciclable',
+    'disposable coffee cups': 'no reciclable (plástico/papel mezclado)',
+    'broken ceramics': 'no reciclable',
+    'light bulbs': 'no reciclable (peligroso)',
+    'batteries': 'no reciclable (peligroso)',
+    'electronics': 'no reciclable (RAEE)',
+    'ink cartridges': 'no reciclable (RAEE)',
+    'paint': 'no reciclable (peligroso)',
+    'solvents': 'no reciclable (peligroso)',
+    'pesticides': 'no reciclable (peligroso)',
+    'motor oil': 'no reciclable (peligroso)',
+    'antifreeze': 'no reciclable (peligroso)',
+    'fluorescent tubes': 'no reciclable (peligroso)',
+    'mercury thermometers': 'no reciclable (peligroso)',
+    'aerosol cans (full)': 'no reciclable (peligroso)',
+    'propane tanks': 'no reciclable (peligroso)',
+    'syringes': 'no reciclable (peligroso)',
+    'razor blades': 'no reciclable (peligroso)',
+    'diapers': 'no reciclable (sanitario)',
+    'feminine hygiene products': 'no reciclable (sanitario)',
+    'pet waste': 'orgánico (solo si es compostable)',
+    'kitty litter': 'no reciclable',
+    'animal carcasses': 'orgánico',
+    'asbestos': 'no reciclable (peligroso)',
+    'medical waste': 'no reciclable (peligroso)',
+    'clothing (worn beyond repair)': 'no reciclable (textil)',
+    'shoes (worn beyond repair)': 'no reciclable (mixto)',
+    'furniture (broken)': 'no reciclable (voluminoso)',
+    'mattress': 'no reciclable (voluminoso)',
+    'carpet': 'no reciclable (voluminoso)',
+    'tires': 'no reciclable (especial)',
+    'construction debris': 'no reciclable (construcción)',
+    'bricks': 'no reciclable (construcción)',
+    'concrete': 'no reciclable (construcción)',
+    'dirt and rocks': 'no reciclable (inerte)',
+    'ceramics': 'no reciclable',
+    'porcelain': 'no reciclable',
+    'mirrors': 'no reciclable',
+    'window glass': 'no reciclable',
+    'light bulbs (incandescent)': 'no reciclable',
+    'christmas lights': 'no reciclable (RAEE)',
+    'broken ceramics': 'no reciclable',
+    'crystal': 'no reciclable (vidrio especial)',
+    'pyrex': 'no reciclable (vidrio especial)',
+    'ovenware': 'no reciclable (vidrio especial)',
+    'drinking glasses': 'no reciclable (vidrio de baja calidad)',
+    'plastic bags (grocery)': 'no reciclable (peligroso para maquinaria)',
+    'plastic film': 'no reciclable',
+    'plastic wrappers': 'no reciclable',
+    'plastic straws': 'no reciclable',
+    'plastic cutlery': 'no reciclable',
+    'styrofoam': 'no reciclable',
+    'yogurt cups (dirty)': 'no reciclable (plástico sucio)',
+    'plastic plant pots (dirty)': 'no reciclable (plástico sucio)',
+    'plastic toys (mixed materials)': 'no reciclable',
+    'garden hoses': 'no reciclable (goma/plástico)',
+    'rubber gloves': 'no reciclable (goma)',
+    'balloons': 'no reciclable (látex/foil)',
+    'pool liners': 'no reciclable (plástico/vinilo)',
+    'shower curtains': 'no reciclable (plástico/tela)',
+    'blinds': 'no reciclable (plástico/metal/tela)',
+    'wallpaper': 'no reciclable (papel/plástico)',
+    'photographs': 'no reciclable (químicos)',
+    'carbon paper': 'no reciclable',
+    'shredded paper (very fine)': 'no reciclable (difícil de procesar)',
+    'tissue paper (used)': 'orgánico (si es biodegradable)',
+    'paper plates (dirty)': 'orgánico (si no tienen recubrimiento plástico)',
+    'paper cups (dirty)': 'orgánico (si no tienen recubrimiento plástico)',
+    'greasy pizza boxes': 'orgánico',
+    'waxed cardboard': 'no reciclable',
+    'milk cartons (dirty)': 'no reciclable (remanentes)',
+    'juice boxes (dirty)': 'no reciclable (remanentes)',
+    'pet food bags': 'no reciclable (plástico laminado)',
+    'frozen food boxes': 'no reciclable (plástico/papel recubierto)',
+    'foil-lined containers': 'no reciclable (mixto)',
+    'coffee pods': 'no reciclable (plástico/aluminio/orgánico)',
+    'k-cups': 'no reciclable (plástico/aluminio/orgánico)',
+    'tea bags with staples': 'no reciclable',
+    'plastic netting (from produce)': 'no reciclable',
+    'plastic strapping': 'no reciclable',
+    'nylon rope': 'no reciclable',
+    'fishing line': 'no reciclable',
+    'bubble wrap': 'no reciclable',
+    'foam packaging': 'no reciclable',
+    'epoxy resin': 'no reciclable (químicos)',
+    'fiberglass': 'no reciclable',
+    'carbon fiber': 'no reciclable',
+    'asphalt shingles': 'no reciclable (construcción)',
+    'drywall': 'no reciclable (construcción)',
+    'insulation (fiberglass)': 'no reciclable (construcción)',
+    'linoleum': 'no reciclable (plástico)',
+    'vinyl flooring': 'no reciclable (plástico)',
+    'ceramic tiles': 'no reciclable (construcción)',
+    'roofing felt': 'no reciclable (construcción)',
+    'caulking tubes': 'no reciclable (plástico/sellador)',
+    'silicone tubes': 'no reciclable (silicona)',
+    'paint cans (empty, dry)': 'reciclable (metal, si no hay residuos)',
+    'glue containers (empty)': 'reciclable (plástico, si está limpio)',
+    'pencils (no eraser/metal)': 'orgánico',
+    'wine corks (natural)': 'orgánico',
+    'plant clippings': 'orgánico',
+    'dried flowers': 'orgánico',
+    'potpourri': 'orgánico',
+    'pinecones': 'orgánico',
+    'nutshells': 'orgánico',
+    'fireplace ash (wood)': 'orgánico',
+    'animal hair': 'orgánico',
+    'human hair': 'orgánico',
+    'feathers': 'orgánico',
+    'nail clippings': 'orgánico',
+    'cotton balls (natural, clean)': 'orgánico',
+    'used tissues (no bodily fluids)': 'orgánico',
+    'shredded paper (clean)': 'reciclable (papel)',
+    'receipts (thermal paper)': 'no reciclable',
+    'sticky notes': 'no reciclable (adhesivo)',
+    'envelopes with windows': 'no reciclable (plástico)',
+    'padded envelopes': 'no reciclable (mixto)',
+    'gift wrap (metallic/glitter)': 'no reciclable',
+    'foil balloons': 'no reciclable',
+    'confetti': 'no reciclable',
+    'ribbon': 'no reciclable (tela/plástico)',
+    'bows': 'no reciclable (tela/plástico)',
+    'glitter': 'no reciclable',
+    'sequins': 'no reciclable',
+    'plastic hangers': 'no reciclable',
+    'wire hangers': 'reciclable (metal, en chatarrería)',
+    'broken pottery': 'no reciclable',
+    'broken ceramics': 'no reciclable',
+    'mirrors': 'no reciclable',
+    'car windows': 'no reciclable',
+    'lightbulbs (LED/CFL)': 'no reciclable (RAEE, manejo especial)',
+    'disposable cameras': 'no reciclable (RAEE)',
+    'old CDs/DVDs': 'no reciclable (policarbonato)',
+    'cassette tapes': 'no reciclable (plástico/cinta)',
+    'video tapes': 'no reciclable (plástico/cinta)',
+    'floppy disks': 'no reciclable (plástico/magnético)',
+    'old cell phone chargers': 'no reciclable (RAEE)',
+    'usb drives': 'no reciclable (RAEE)',
+    'memory cards': 'no reciclable (RAEE)',
+    'calculators': 'no reciclable (RAEE)',
+    'watches (digital/analog)': 'no reciclable (RAEE) / reciclable (metal)',
+    'jewelry (costume)': 'no reciclable (mixto)',
+    'appliances (small)': 'no reciclable (RAEE)',
+    'toasters': 'no reciclable (RAEE)',
+    'blenders': 'no reciclable (RAEE)',
+    'coffee makers': 'no reciclable (RAEE)',
+    'electric kettles': 'no reciclable (RAEE)',
+    'hair dryers': 'no reciclable (RAEE)',
+    'electric toothbrushes': 'no reciclable (RAEE)',
+    'shavers': 'no reciclable (RAEE)',
+    'electric razors': 'no reciclable (RAEE)',
+    'digital cameras': 'no reciclable (RAEE)',
+    'webcams': 'no reciclable (RAEE)',
+    'printers': 'no reciclable (RAEE)',
+    'scanners': 'no reciclable (RAEE)',
+    'routers': 'no reciclable (RAEE)',
+    'modems': 'no reciclable (RAEE)',
+    'cordless phones': 'no reciclable (RAEE)',
+    'radios': 'no reciclable (RAEE)',
+    'speakers': 'no reciclable (RAEE)',
+    'headphones': 'no reciclable (RAEE)',
+    'earbuds': 'no reciclable (RAEE)',
+    'remote controls': 'no reciclable (RAEE)',
+    'power tools': 'no reciclable (RAEE)',
+    'drills': 'no reciclable (RAEE)',
+    'saws (electric)': 'no reciclable (RAEE)',
+    'sanders': 'no reciclable (RAEE)',
+    'grinders': 'no reciclable (RAEE)',
+    'leaf blowers (electric)': 'no reciclable (RAEE)',
+    'weed whackers (electric)': 'no reciclable (RAEE)',
+    'lawn mowers (electric)': 'no reciclable (RAEE)',
+    'snow blowers (electric)': 'no reciclable (RAEE)',
+    'pressure washers (electric)': 'no reciclable (RAEE)',
+    'air conditioners (portable)': 'no reciclable (RAEE)',
+    'dehumidifiers': 'no reciclable (RAEE)',
+    'humidifiers': 'no reciclable (RAEE)',
+    'fans (electric)': 'no reciclable (RAEE)',
+    'heaters (electric)': 'no reciclable (RAEE)',
+    'vacuum cleaners': 'no reciclable (RAEE)',
+    'sewing machines (electric)': 'no reciclable (RAEE)',
+    'exercise equipment (electronic)': 'no reciclable (RAEE)',
+    'scooters (electric)': 'no reciclable (RAEE)',
+    'hoverboards': 'no reciclable (RAEE)',
+    'electric bikes (parts)': 'no reciclable (RAEE)',
+    'electric skateboards': 'no reciclable (RAEE)',
+    'drones': 'no reciclable (RAEE)',
+    'robot toys': 'no reciclable (RAEE)',
+    'solar powered garden lights': 'no reciclable (RAEE)',
+    'car batteries': 'no reciclable (peligroso)',
+    'motorcycle helmets': 'no reciclable (mixto)',
+    'bike tires': 'no reciclable (goma)',
+    'car tires': 'no reciclable (goma)',
+    'oil filters': 'no reciclable (peligroso)',
+    'brake fluid': 'no reciclable (peligroso)',
+    'antifreeze (liquid)': 'no reciclable (peligroso)',
+    'gasoline': 'no reciclable (peligroso)',
+    'diesel': 'no reciclable (peligroso)',
+    'paint thinner': 'no reciclable (peligroso)',
+    'varnish': 'no reciclable (peligroso)',
+    'stains': 'no reciclable (peligroso)',
+    'adhesives (liquid)': 'no reciclable (peligroso)',
+    'sealants': 'no reciclable (peligroso)',
+    'caulking': 'no reciclable (peligroso)',
+    'epoxy': 'no reciclable (peligroso)',
+    'resins': 'no reciclable (peligroso)',
+    'fiberglass resin': 'no reciclable (peligroso)',
+    'solvents': 'no reciclable (peligroso)',
+    'cleaners (household)': 'no reciclable (peligroso)',
+    'bleach': 'no reciclable (peligroso)',
+    'ammonia': 'no reciclable (peligroso)',
+    'drain cleaner': 'no reciclable (peligroso)',
+    'oven cleaner': 'no reciclable (peligroso)',
+    'toilet bowl cleaner': 'no reciclable (peligroso)',
+    'pesticides (liquid)': 'no reciclable (peligroso)',
+    'herbicides (liquid)': 'no reciclable (peligroso)',
+    'fertilizers (liquid)': 'no reciclable (peligroso)',
+    'pool chemicals': 'no reciclable (peligroso)',
+    'pharmaceuticals': 'no reciclable (peligroso)',
+    'sharps': 'no reciclable (peligroso)',
+    'medical waste': 'no reciclable (peligroso)',
+    'fire extinguishers': 'no reciclable (peligroso)',
+    'smoke detectors': 'no reciclable (peligroso)',
+    'carbon monoxide detectors': 'no reciclable (peligroso)',
+    'radon test kits': 'no reciclable (peligroso)',
+    'mercury thermostats': 'no reciclable (peligroso)',
+    'road flare': 'no reciclable (peligroso)',
+    'ammunition': 'no reciclable (peligroso)',
+    'fireworks': 'no reciclable (peligroso)',
+    'flares': 'no reciclable (peligroso)',
+    'explosives': 'no reciclable (peligroso)',
+    'radioactive waste': 'no reciclable (peligroso)',
+    'biohazard waste': 'no reciclable (peligroso)',
+    'chemical waste': 'no reciclable (peligroso)',
+    'hazardous waste': 'no reciclable (peligroso)',
+    'asbestos': 'no reciclable (peligroso)',
+    'lead paint chips': 'no reciclable (peligroso)',
+    'contaminated soil': 'no reciclable (peligroso)',
+    'animal waste (large quantities)': 'no reciclable (especial)',
+    'dead animals (large)': 'orgánico (manejo especial)',
+    'furniture (large pieces)': 'no reciclable (voluminoso)',
+    'mattresses': 'no reciclable (voluminoso)',
+    'box springs': 'no reciclable (voluminoso)',
+    'refrigerators (large)': 'no reciclable (RAEE, voluminoso)',
+    'freezers (large)': 'no reciclable (RAEE, voluminoso)',
+    'washing machines': 'no reciclable (RAEE, voluminoso)',
+    'dryers': 'no reciclable (RAEE, voluminoso)',
+    'dishwashers': 'no reciclable (RAEE, voluminoso)',
+    'stoves': 'no reciclable (RAEE, voluminoso)',
+    'ovens': 'no reciclable (RAEE, voluminoso)',
+    'water heaters': 'no reciclable (voluminoso)',
+    'furnaces': 'no reciclable (voluminoso)',
+    'air conditioners (window)': 'no reciclable (RAEE)',
+    'televisions (old CRT)': 'no reciclable (RAEE)',
+    'computer monitors (CRT)': 'no reciclable (RAEE)',
+    'tires (car/truck)': 'no reciclable (especial)',
+    'tree stumps': 'orgánico (manejo especial)',
+    'large branches': 'orgánico (manejo especial)',
+    'tree trunks': 'orgánico (manejo especial)',
+    'construction and demolition debris': 'no reciclable (construcción)',
+    'drywall': 'no reciclable (construcción)',
+    'plywood': 'reciclable (madera limpia) / no reciclable (tratado)',
+    'lumber (treated)': 'no reciclable',
+    'shingles': 'no reciclable (construcción)',
+    'insulation': 'no reciclable (construcción)',
+    'concrete (large pieces)': 'no reciclable (construcción)',
+    'bricks': 'no reciclable (construcción)',
+    'asphalt': 'no reciclable (construcción)',
+    'pipes (PVC)': 'reciclable (plástico)',
+    'pipes (metal)': 'reciclable (metal)',
+    'electrical wiring (scrap)': 'reciclable (metal)',
+    'rebar': 'reciclable (metal)',
+    'metal siding': 'reciclable (metal)',
+    'aluminum cans': 'reciclable (metal)',
+    'steel cans': 'reciclable (metal)',
+    'tin cans': 'reciclable (metal)',
+    'copper wire': 'reciclable (metal)',
+    'brass': 'reciclable (metal)',
+    'lead': 'reciclable (metal)',
+    'zinc': 'reciclable (metal)',
+    'stainless steel': 'reciclable (metal)',
+    'cast iron': 'reciclable (metal)',
+    'aluminum foil (clean)': 'reciclable (metal)',
+    'aluminum trays (clean)': 'reciclable (metal)',
+    'aerosol cans (empty)': 'reciclable (metal)',
+    'metal hangers': 'reciclable (metal, en chatarrería)',
+    'metal chairs': 'reciclable (metal)',
+    'metal tables': 'reciclable (metal)',
+    'metal shelves': 'reciclable (metal)',
+    'metal cabinets': 'reciclable (metal)',
+    'metal pipes': 'reciclable (metal)',
+    'metal roofing': 'reciclable (metal)',
+    'car parts (metal)': 'reciclable (metal)',
+    'bicycle parts (metal)': 'reciclable (metal)',
+    'appliances (metal parts)': 'reciclable (metal)',
+    'hardware (screws, nails, bolts)': 'reciclable (metal)',
+    'keys': 'reciclable (metal)',
+    'coins': 'reciclable (metal)',
+    'jewelry (precious metal)': 'reciclable (metal)',
+    'silverware (metal)': 'reciclable (metal)',
+    'pots and pans (metal)': 'reciclable (metal)',
+    'utensils (metal)': 'reciclable (metal)',
+    'tools (metal)': 'reciclable (metal)',
+    'weights (metal)': 'reciclable (metal)',
+    'dumbbells': 'reciclable (metal)',
+    'barbells': 'reciclable (metal)',
+    'metal outdoor furniture': 'reciclable (metal)',
+    'fire hydrants': 'reciclable (metal)',
+    'manhole covers': 'reciclable (metal)',
+    'fencing (metal)': 'reciclable (metal)',
+    'railroad ties (metal)': 'reciclable (metal)',
+    'old machinery (metal)': 'reciclable (metal)',
+    'industrial scrap metal': 'reciclable (metal)',
+    'soda bottles (plastic)': 'reciclable (plástico)',
+    'water bottles (plastic)': 'reciclable (plástico)',
+    'milk jugs (plastic)': 'reciclable (plástico)',
+    'detergent bottles (plastic)': 'reciclable (plástico)',
+    'shampoo bottles (plastic)': 'reciclable (plástico)',
+    'plastic food containers (clean)': 'reciclable (plástico)',
+    'yogurt cups (clean)': 'reciclable (plástico)',
+    'butter tubs (clean)': 'reciclable (plástico)',
+    'plastic jars (peanut butter, etc.)': 'reciclable (plástico)',
+    'plastic caps (from bottles/jars)': 'reciclable (plástico)',
+    'plastic flower pots (clean)': 'reciclable (plástico)',
+    'plastic laundry baskets': 'reciclable (plástico)',
+    'plastic bins': 'reciclable (plástico)',
+    'plastic toys (simple, clean)': 'reciclable (plástico)',
+    'plastic buckets': 'reciclable (plástico)',
+    'plastic hangers (some types)': 'reciclable (plástico)',
+    'plastic chairs': 'reciclable (plástico)',
+    'plastic tables': 'reciclable (plástico)',
+    'plastic storage containers': 'reciclable (plástico)',
+    'plastic crates': 'reciclable (plástico)',
+    'plastic pipes (PVC)': 'reciclable (plástico)',
+    'plastic bags (specific drop-off)': 'reciclable (plástico, en centros de acopio)',
+    'plastic film (specific drop-off)': 'reciclable (plástico, en centros de acopio)',
+    'plastic wrappers (clean, certain types)': 'reciclable (plástico, si es PET o HDPE)',
+    'blister packs (plastic only)': 'reciclable (plástico)',
+    'straws (plastic, if clean and accepted)': 'reciclable (plástico, algunos programas)',
+    'plastic cutlery (clean, if accepted)': 'reciclable (plástico, algunos programas)',
+    'glass bottles (clear, brown, green)': 'reciclable (vidrio)',
+    'glass jars (food, beverage)': 'reciclable (vidrio)',
+    'wine bottles': 'reciclable (vidrio)',
+    'beer bottles': 'reciclable (vidrio)',
+    'soda bottles (glass)': 'reciclable (vidrio)',
+    'perfume bottles (glass)': 'reciclable (vidrio)',
+    'cosmetic jars (glass)': 'reciclable (vidrio)',
+    'vases (glass)': 'reciclable (vidrio)',
+    'glass food storage containers': 'reciclable (vidrio)',
+    'paper (mixed, clean)': 'reciclable (papel)',
+    'newspapers': 'reciclable (papel)',
+    'magazines': 'reciclable (papel)',
+    'junk mail': 'reciclable (papel)',
+    'phone books': 'reciclable (papel)',
+    'catalogs': 'reciclable (papel)',
+    'office paper': 'reciclable (papel)',
+    'envelopes (without windows)': 'reciclable (papel)',
+    'paper bags (clean)': 'reciclable (papel)',
+    'cereal boxes (clean)': 'reciclable (cartón)',
+    'shoe boxes (clean)': 'reciclable (cartón)',
+    'cardboard boxes (corrugated, clean)': 'reciclable (cartón)',
+    'paper towel rolls': 'reciclable (cartón)',
+    'toilet paper rolls': 'reciclable (cartón)',
+    'egg cartons (paper)': 'reciclable (papel)',
+    'paperboard (from food packaging, clean)': 'reciclable (papel)',
+    'wrapping paper (non-metallic, no glitter)': 'reciclable (papel)',
+    'greeting cards (non-metallic, no glitter)': 'reciclable (papel)',
+    'books (paperback)': 'reciclable (papel)',
+    'notebooks (paper)': 'reciclable (papel)',
+    'brochures': 'reciclable (papel)',
+    'flyers': 'reciclable (papel)',
+    'postcards': 'reciclable (papel)',
+    'receipts (non-thermal)': 'reciclable (papel)',
+    'shredded paper (in paper bag)': 'reciclable (papel)',
+    'paper tubes (from posters, etc.)': 'reciclable (cartón)',
+    'juice cartons (gable top, clean)': 'reciclable (cartón de bebidas)',
+    'milk cartons (gable top, clean)': 'reciclable (cartón de bebidas)',
+    'soup cartons (aseptic, clean)': 'reciclable (cartón de bebidas)',
+    'broth cartons (aseptic, clean)': 'reciclable (cartón de bebidas)',
+    'wine cartons (aseptic, clean)': 'reciclable (cartón de bebidas)',
+    'plant-based milk cartons (clean)': 'reciclable (cartón de bebidas)',
+    'yogurt cartons (gable top, clean)': 'reciclable (cartón de bebidas)',
+    'ice cream containers (paperboard, clean)': 'reciclable (papelboard)',
+    'frozen food boxes (paperboard, clean)': 'reciclable (papelboard)',
+    'take-out containers (paperboard, clean)': 'reciclable (papelboard)',
+    'coffee grounds': 'orgánico',
+    'tea bags': 'orgánico',
+    'fruit and vegetable scraps': 'orgánico',
+    'egg shells': 'orgánico',
+    'bread and pasta (stale/spoiled)': 'orgánico',
+    'meat scraps (cooked/uncooked)': 'orgánico',
+    'bones (small)': 'orgánico',
+    'dairy products (spoiled)': 'orgánico',
+    'coffee filters': 'orgánico',
+    'paper napkins (used, no chemicals)': 'orgánico',
+    'paper towels (used, no chemicals)': 'orgánico',
+    'paper plates (used, no wax/plastic coating)': 'orgánico',
+    'leaves': 'orgánico',
+    'grass clippings': 'orgánico',
+    'small branches/twigs': 'orgánico',
+    'garden plant trimmings': 'orgánico',
+    'flowers (wilted)': 'orgánico',
+    'potting soil (used)': 'orgánico',
+    'sawdust (untreated wood)': 'orgánico',
+    'wood chips (untreated wood)': 'orgánico',
+    'fireplace ash (wood ash only)': 'orgánico',
+    'hair (human/animal)': 'orgánico',
+    'feathers': 'orgánico',
+    'cotton balls (100% cotton, clean)': 'orgánico',
+    'wool dryer lint': 'orgánico',
+    'corks (natural)': 'orgánico',
+    'nut shells': 'orgánico',
+    'seeds': 'orgánico'
   };
+
+  async function loadModel() {
+    if (!model) {
+      loader.style.display = 'block';
+      model = await cocoSsd.load();
+      loader.style.display = 'none';
+      console.log('✅ Modelo COCO-SSD cargado.');
+    }
+  }
+
+  // Load model when the page loads
+  window.onload = loadModel;
 
   async function startCamera() {
     try {
+      stopCamera(); // Detener cualquier stream de cámara existente
+
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       let constraints = { video: true };
 
@@ -734,87 +1710,197 @@
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       video.srcObject = stream;
       video.style.display = 'block';
-      canvas.style.display = 'block';
-      loader.style.display = 'block';
-      stopCameraButton.style.display = 'block';
+      canvas.style.display = 'block'; // Asegura que el canvas también esté visible para dibujar
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpia cualquier dibujo anterior
+      categoryLabel.style.display = 'none'; // Ocultar etiqueta de categoría para cámara
 
-      video.addEventListener('loadedmetadata', async () => {
+      stopCameraButton.style.display = 'inline-flex'; // Mostrar botón de detener
+
+      video.addEventListener('loadeddata', () => {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+        detectFrame(); // Iniciar la detección en tiempo real
+        console.log('Camera started, real-time detection active.');
+      }, { once: true }); // Usar { once: true } para que el evento se dispare una sola vez
+      // Esto evita múltiples llamadas a detectFrame si el video se carga varias veces
+      // y resuelve el problema del bucle infinito.
 
-        if (!model) {
-          model = await cocoSsd.load();
-          console.log('✅ Modelo cargado.');
-        }
-
-        loader.style.display = 'none';
-        detectFrame();
-      });
     } catch (error) {
       alert('Error al acceder a la cámara: ' + error.message);
       console.error(error);
     }
   }
 
+  // Función para detección en tiempo real (para la cámara)
   async function detectFrame() {
-  if (!model || !video.srcObject) return;
-  const predictions = await model.detect(video);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  predictions.forEach(pred => {
-    if (pred.score > 0.6 && recyclingCategories[pred.class]) {
-      const category = recyclingCategories[pred.class];
-      // Dibujar el cuadro
-      ctx.strokeStyle = 'lime';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(...pred.bbox);
-      // Fondo para el texto
-      const text = `${pred.class} - ${category}`;
-      const textWidth = ctx.measureText(text).width;
-      const textHeight = 24; // Aumentamos el tamaño
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)'; // Fondo negro más opaco
-      ctx.fillRect(pred.bbox[0], pred.bbox[1] - textHeight, textWidth + 15, textHeight);
-      // Texto
-      ctx.fillStyle = '#FF0000'; // Rojo brillante para contraste
-      ctx.font = 'bold 20px Arial'; // Más grande y en negrita
-      ctx.fillText(text, pred.bbox[0] + 5, pred.bbox[1] - 5);
-    }
-  });
-  requestAnimationFrame(detectFrame);
-}
+    if (model && video.srcObject) { // Solo si el modelo está cargado y la cámara está activa
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  function uploadImage() {
-    const file = document.getElementById('upload').files[0];
+      const predictions = await model.detect(video);
+
+      let mainCategory = 'No clasificado'; // Categoría principal a mostrar en la etiqueta
+
+      predictions.forEach(pred => {
+        const category = recyclingCategories[pred.class.toLowerCase()]; // Convertir a minúsculas
+        if (pred.score > 0.6 && category && category !== 'no es un residuo') { // Solo si la confianza es alta y es un residuo
+          // Dibujar el cuadro delimitador
+          ctx.strokeStyle = 'lime';
+          ctx.lineWidth = 4; // Borde más grueso para mayor visibilidad
+          ctx.strokeRect(pred.bbox[0], pred.bbox[1], pred.bbox[2], pred.bbox[3]);
+
+          // Fondo para el texto de la clase
+          const classText = `${pred.class} (${(pred.score * 100).toFixed(1)}%)`;
+          const classTextWidth = ctx.measureText(classText).width;
+          const classTextHeight = 24;
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillRect(pred.bbox[0], pred.bbox[1] - classTextHeight - 5, classTextWidth + 10, classTextHeight);
+
+          // Texto de la clase detectada
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 20px Arial';
+          ctx.fillText(classText, pred.bbox[0] + 5, pred.bbox[1] - 10);
+
+          // Determinar la categoría principal para la etiqueta general
+          if (category.includes('reciclable')) {
+            mainCategory = 'RECICLABLE';
+            categoryLabel.style.backgroundColor = 'rgba(52, 199, 89, 0.8)'; // Verde
+          } else if (category.includes('orgánico')) {
+            mainCategory = 'ORGÁNICO';
+            categoryLabel.style.backgroundColor = 'rgba(153, 102, 51, 0.8)'; // Marrón
+          } else if (category.includes('no reciclable')) {
+            mainCategory = 'NO RECICLABLE';
+            categoryLabel.style.backgroundColor = 'rgba(255, 69, 58, 0.8)'; // Rojo
+          }
+        }
+      });
+
+      // Mostrar la etiqueta de categoría principal
+      if (mainCategory !== 'No clasificado') {
+        categoryLabel.textContent = mainCategory;
+        categoryLabel.style.display = 'block';
+      } else {
+        categoryLabel.style.display = 'none'; // Ocultar si no hay detección relevante
+      }
+
+      animationFrameId = requestAnimationFrame(detectFrame); // Continuar el bucle
+    } else {
+      // Si la cámara se detuvo, asegurar que la etiqueta de categoría esté oculta
+      categoryLabel.style.display = 'none';
+    }
+  }
+
+  // Función para la subida de imágenes
+  async function uploadImage() {
+    const fileInput = document.getElementById('upload');
+    const file = fileInput.files[0];
     if (file) {
+      if (!model) {
+        alert('Modelo no cargado. Por favor, espere a que el modelo cargue y intente de nuevo.');
+        return;
+      }
+      stopCamera(); // Detener la cámara si está activa
+
+      loader.style.display = 'block';
+      categoryLabel.style.display = 'none'; // Ocultar la etiqueta de categoría de cámara
+
       const reader = new FileReader();
       reader.onload = function (e) {
         const img = new Image();
         img.onload = async function () {
           canvas.width = img.width;
           canvas.height = img.height;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
           video.style.display = 'none';
           canvas.style.display = 'block';
-          if (!model) {
-            model = await cocoSsd.load();
-          }
-          const predictions = await model.detect(img);
+          stopCameraButton.style.display = 'none';
+
+          const predictions = await model.detect(canvas);
+          loader.style.display = 'none';
+
+          // Procesa las predicciones para la imagen subida
+          let detectedItems = [];
+          let mainCategoryForUpload = 'No clasificado';
+
           predictions.forEach(pred => {
-            if (pred.score > 0.6 && recyclingCategories[pred.class]) {
-              const category = recyclingCategories[pred.class];
-              ctx.strokeStyle = 'lime';
-              ctx.lineWidth = 2;
-              ctx.strokeRect(...pred.bbox);
-              ctx.fillStyle = 'lime';
-              ctx.font = '16px Arial';
-              const text = `${pred.class} - ${category}`;
-              ctx.fillText(text, pred.bbox[0], pred.bbox[1] > 20 ? pred.bbox[1] - 5 : 10);
+            const category = recyclingCategories[pred.class.toLowerCase()];
+            if (pred.score > 0.6 && category && category !== 'no es un residuo') {
+                detectedItems.push({ class: pred.class, category: category });
+                // Aquí, para una imagen subida, puedes elegir la categoría del objeto más confiable
+                // o combinar las categorías de alguna manera si hay varios objetos.
+                // Por simplicidad, tomaremos la primera categoría significativa para la etiqueta principal.
+                if (mainCategoryForUpload === 'No clasificado') {
+                  if (category.includes('reciclable')) {
+                    mainCategoryForUpload = 'RECICLABLE';
+                  } else if (category.includes('orgánico')) {
+                    mainCategoryForUpload = 'ORGÁNICO';
+                  } else if (category.includes('no reciclable')) {
+                    mainCategoryForUpload = 'NO RECICLABLE';
+                  }
+                }
+
+                 // Dibuja el bounding box y el texto de la CLASE detectada sobre la imagen
+                ctx.strokeStyle = 'lime';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(pred.bbox[0], pred.bbox[1], pred.bbox[2], pred.bbox[3]);
+
+                const classText = `${pred.class} (${(pred.score * 100).toFixed(1)}%)`;
+                const classTextWidth = ctx.measureText(classText).width;
+                const classTextHeight = 24;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(pred.bbox[0], pred.bbox[1] - classTextHeight - 5, classTextWidth + 10, classTextHeight);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText(classText, pred.bbox[0] + 5, pred.bbox[1] - 10);
             }
           });
+
+          if (detectedItems.length > 0) {
+            let resultMessage = 'Se detectaron los siguientes elementos:\n';
+            detectedItems.forEach(item => {
+              resultMessage += `- ${item.class}: ${item.category}\n`;
+            });
+            showModal(resultMessage); // Mostrar modal con todos los objetos detectados
+
+            // Mostrar la etiqueta de categoría principal sobre la imagen
+            categoryLabel.textContent = mainCategoryForUpload;
+            if (mainCategoryForUpload.includes('RECICLABLE')) {
+              categoryLabel.style.backgroundColor = 'rgba(52, 199, 89, 0.8)';
+            } else if (mainCategoryForUpload.includes('ORGÁNICO')) {
+              categoryLabel.style.backgroundColor = 'rgba(153, 102, 51, 0.8)';
+            } else if (mainCategoryForUpload.includes('NO RECICLABLE')) {
+              categoryLabel.style.backgroundColor = 'rgba(255, 69, 58, 0.8)';
+            }
+            categoryLabel.style.display = 'block';
+
+            // Agregar solo a historial si es una imagen subida
+            addToHistory(detectedItems, mainCategoryForUpload);
+
+          } else {
+            showModal('No se detectaron elementos clasificables en la imagen.');
+            categoryLabel.textContent = 'NO CLASIFICADO';
+            categoryLabel.style.backgroundColor = 'rgba(128, 128, 128, 0.8)'; // Gris
+            categoryLabel.style.display = 'block';
+            addToHistory([], 'No clasificado'); // Registrar en historial aunque no se detecte nada
+          }
         };
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
+    } else {
+      alert('No se seleccionó ninguna imagen.');
     }
+  }
+
+  function showModal(message) {
+    resultText.textContent = message;
+    resultModal.classList.add('show');
+  }
+
+  function closeModal() {
+    resultModal.classList.remove('show');
   }
 
   function stopCamera() {
@@ -822,10 +1908,38 @@
       const stream = video.srcObject;
       stream.getTracks().forEach(track => track.stop());
       video.srcObject = null;
-      video.style.display = 'none';
-      canvas.style.display = 'none';
-      stopCameraButton.style.display = 'none';
     }
+    cancelAnimationFrame(animationFrameId); // Detener el bucle de detección en tiempo real
+    video.style.display = 'none';
+    canvas.style.display = 'block'; // Mantener el canvas visible con la última imagen/dibujo
+    stopCameraButton.style.display = 'none';
+    categoryLabel.style.display = 'none'; // Ocultar la etiqueta de categoría
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas
+  }
+
+  // Modificada para historial solo de subidas
+  function addToHistory(detectedItems, overallCategory) {
+    let historyEntry = '';
+    if (detectedItems.length > 0) {
+        historyEntry = `Análisis de imagen: ${overallCategory} (`;
+        detectedItems.forEach((item, index) => {
+            historyEntry += `${item.class}: ${item.category}`;
+            if (index < detectedItems.length - 1) {
+                historyEntry += ', ';
+            }
+        });
+        historyEntry += `) - ${new Date().toLocaleString()}`;
+    } else {
+        historyEntry = `Análisis de imagen: No se detectó ningún objeto clasificable - ${new Date().toLocaleString()}`;
+    }
+
+    const listItem = document.createElement('li');
+    listItem.textContent = historyEntry;
+    historyList.prepend(listItem); // Añadir al principio de la lista
+  }
+
+  function clearHistory() {
+    historyList.innerHTML = '';
   }
 
   function toggleMenu(forceClose = null) {
@@ -908,25 +2022,28 @@
     ];
     stats.forEach(stat => {
       const element = document.getElementById(stat.id);
-      const interval = setInterval(() => {
-        if (stat.current < stat.target) {
-          stat.current += Math.ceil(stat.target / 100);
-          element.textContent = stat.current;
-        } else {
-          element.textContent = stat.target;
-          clearInterval(interval);
-        }
-      }, 20);
+      // Check if animation already started for this stat to avoid re-running
+      if (element.textContent === '0' || parseInt(element.textContent) < stat.target) {
+        const interval = setInterval(() => {
+          if (stat.current < stat.target) {
+            stat.current += Math.ceil(stat.target / 100);
+            element.textContent = stat.current;
+          } else {
+            element.textContent = stat.target;
+            clearInterval(interval);
+          }
+        }, 20);
+      }
     });
   }
+  let statsAnimated = false;
   window.addEventListener('scroll', () => {
-    if (document.getElementById('about').getBoundingClientRect().top < window.innerHeight) {
+    if (!statsAnimated && document.getElementById('about').getBoundingClientRect().top < window.innerHeight - 100) {
       animateStats();
+      statsAnimated = true; // Set flag to true after animating once
     }
   });
+
 </script>
 </body>
-
-
-
 </html>
