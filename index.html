@@ -5,2045 +5,1144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VisionAI - Clasificador de Residuos</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
     <style>
-        /* Aquí va el CSS */
+        /* CSS RESET & BASE STYLES */
         * {
             box-sizing: border-box;
-        }
-        body {
-            font-family: 'Roboto', Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-image: url('reciclaje_blur.jpg');
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-image: url('reciclaje_blur.jpg'); /* Asegúrate de tener estas imágenes */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             color: #333;
-            transition: all 0.5s ease;
+            transition: background-image 0.5s ease, color 0.5s ease;
             overflow-x: hidden;
             position: relative;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+            min-height: 100vh; /* Para que el footer se quede abajo */
+            display: flex;
+            flex-direction: column;
         }
+
         body.dark-mode {
-            background-image: url('reciclaje_blur_dark.jpg');
+            background-image: url('reciclaje_blur_dark.jpg'); /* Asegúrate de tener estas imágenes */
             color: #e0e0e0;
-            text-shadow: 0 1px 1px rgba(255,255,255,0.2);
         }
-        .navbar {
-            background-color: #fff;
-            padding: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            position: fixed;
-            width: 100%;
-            top: 0;
+
+        /* MATERIAL UI INSPIRED STYLES */
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --primary-dark: #388E3C;
+            --primary-light: #81C784;
+            --accent-color: #FFC107; /* Amber */
+            --text-color: #333;
+            --text-color-dark: #e0e0e0;
+            --background-light: #f4f6f8;
+            --background-dark: #212121;
+            --card-background-light: rgba(255, 255, 255, 0.95);
+            --card-background-dark: rgba(40, 40, 40, 0.95);
+            --border-color-light: #e0e0e0;
+            --border-color-dark: #555;
+            --shadow-light: 0 4px 10px rgba(0,0,0,0.15);
+            --shadow-dark: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        body.dark-mode {
+            --text-color: var(--text-color-dark);
+            --background-light: var(--background-dark);
+            --card-background-light: var(--card-background-dark);
+            --border-color-light: var(--border-color-dark);
+            --shadow-light: var(--shadow-dark);
+        }
+
+        /* HEADER & NAVIGATION */
+        header {
+            background: var(--card-background-light);
+            padding: 1rem 20px;
+            box-shadow: var(--shadow-light);
+            text-align: center;
+            position: relative;
             z-index: 1000;
             display: flex;
-            justify-content: center;
-            transition: background-color 0.5s;
-            animation: slideInDown 1s ease-in;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
         }
-        .navbar.dark-mode {
-            background-color: #2d3839;
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            color: var(--primary-color);
+            flex-grow: 1; /* Permite que ocupe el espacio disponible */
+            text-align: left;
+            padding-left: 10px;
         }
-        .navbar a {
-            color: #5f6368;
-            text-decoration: none;
-            margin: 0 20px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            animation: bounceIn 1s ease-in;
-        }
-        .navbar a:hover {
-            color: #34c759;
-            transform: scale(1.1);
-        }
-        .menu-toggle {
-            display: none;
-            font-size: 24px;
+
+        .menu-button {
             background: none;
             border: none;
+            color: var(--primary-color);
+            font-size: 2.5rem;
             cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .menu-button:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        body.dark-mode .menu-button {
+            color: var(--primary-light);
+        }
+        body.dark-mode .menu-button:hover {
+            background-color: rgba(129, 199, 132, 0.1);
+        }
+
+        /* SIDE NAV */
+        .sidenav {
+            height: 100%;
+            width: 0; /* Hidden by default */
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            right: 0; /* Slide in from right */
+            background-color: var(--card-background-light);
+            overflow-x: hidden;
+            transition: 0.5s; /* Smooth transition */
+            padding-top: 60px;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidenav a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 1.5rem;
+            color: var(--text-color);
+            display: block;
+            transition: 0.3s;
+            border-bottom: 1px solid var(--border-color-light);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidenav a:hover {
+            background-color: var(--primary-light);
+            color: white;
+        }
+        .sidenav a:hover .material-icons {
+            color: white;
+        }
+
+        .sidenav .closebtn {
             position: absolute;
-            right: 20px;
-            top: 15px;
-            transition: transform 0.3s;
+            top: 0;
+            right: 25px;
+            font-size: 3rem;
+            margin-left: 50px;
+            color: var(--primary-color);
+            border-bottom: none;
         }
-        .menu-toggle:hover {
-            transform: rotate(90deg);
+        .sidenav .closebtn:hover {
+            background-color: transparent;
+            color: var(--primary-dark);
         }
-        .section {
-            max-width: 1000px;
-            margin: 80px auto 40px;
+
+        body.dark-mode .sidenav a {
+            color: var(--text-color-dark);
+            border-bottom: 1px solid var(--border-color-dark);
+        }
+        body.dark-mode .sidenav a:hover {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+        body.dark-mode .sidenav .closebtn {
+            color: var(--primary-light);
+        }
+        body.dark-mode .sidenav .closebtn:hover {
+            color: var(--primary-color);
+        }
+
+        /* MAIN CONTENT LAYOUT */
+        main {
+            flex-grow: 1; /* Permite que el contenido principal ocupe el espacio restante */
+            max-width: 1200px;
+            margin: 30px auto;
             padding: 20px;
-            text-align: center;
-            background-color: #fff;
+            background: var(--card-background-light);
             border-radius: 12px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
-            animation: slideInLeft 1s ease-in;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            position: relative;
+            z-index: 100;
+            animation: fadeIn 0.8s ease-out;
         }
-        .section:nth-child(even) {
-            animation: slideInRight 1s ease-in;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .section.dark-mode {
-            background-color: #2d3839;
+
+        .section-card {
+            flex: 1;
+            min-width: 320px;
+            padding: 25px;
+            border-radius: 12px;
+            background-color: var(--background-light);
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color-light);
         }
-        h1 {
-            color: #34c759;
-            font-size: clamp(32px, 5vw, 40px);
-            font-weight: 500;
-            animation: bounceIn 1s ease-in;
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-light), inset 0 0 8px rgba(0,0,0,0.1);
         }
+
+        body.dark-mode .section-card {
+            background-color: #333;
+            box-shadow: inset 0 0 8px rgba(255,255,255,0.1);
+            border: 1px solid var(--border-color-dark);
+        }
+        body.dark-mode .section-card:hover {
+            box-shadow: var(--shadow-dark), inset 0 0 8px rgba(255,255,255,0.15);
+        }
+
         h2 {
-            color: #34c759;
-            font-size: clamp(24px, 4vw, 32px);
+            color: var(--primary-color);
             margin-bottom: 20px;
-            animation: fadeIn 1s ease-in;
+            font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+            font-weight: 500;
         }
-        p {
-            font-size: clamp(16px, 3vw, 18px);
-            color: #666;
-            line-height: 1.6;
-            animation: fadeInUp 1s ease-in;
+        body.dark-mode h2 {
+            color: var(--primary-light);
         }
-        .media-container {
+
+        /* CAMERA & CANVAS */
+        #webcam {
+            display: none;
+            width: 100%;
+            max-width: 640px; /* Standard webcam width */
+            height: auto; /* Maintain aspect ratio */
+            border: 3px solid var(--primary-color);
+            border-radius: 8px;
+            margin-top: 15px;
+            background-color: #000;
+            transition: border-color 0.3s ease;
+            position: relative; /* For the overlay label */
+            overflow: hidden; /* Ensure label doesn't spill out */
+        }
+        body.dark-mode #webcam {
+            border: 3px solid var(--primary-light);
+        }
+
+        /* Video container for relative positioning of label */
+        .video-container {
             position: relative;
             width: 100%;
             max-width: 640px;
-            height: auto;
-            aspect-ratio: 4 / 3;
-            margin: 20px auto;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            background-color: #fff;
-            transition: transform 0.3s ease;
-            animation: zoomIn 1s ease-in;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures label stays within bounds */
         }
-        .media-container:hover {
-            transform: scale(1.05);
-        }
-        #video, #canvas {
+
+        /* Styles for the large prediction label over the camera */
+        #predictionLabel {
+            position: absolute;
+            bottom: 0; /* Position at the bottom of the camera feed */
+            left: 0;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            padding: 15px 10px; /* Adjusted padding */
+            background-color: rgba(0, 123, 255, 0.9); /* Default Blue */
+            color: white;
+            font-size: 2.2rem; /* Adjusted font size for mobile */
+            font-weight: 700;
+            text-align: center;
+            border-radius: 0 0 8px 8px; /* Rounded bottom corners to match video */
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.3); /* Shadow on top */
+            transition: background-color 0.4s ease, transform 0.3s ease;
+            display: none; /* Hidden by default */
+            z-index: 2; /* Above the video, below other UI elements */
+            animation: slideUp 0.4s ease-out; /* Animation for appearance */
         }
-        #canvas {
-            display: none;
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(100%); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .btn-container {
+
+        /* Colors for different categories */
+        #predictionLabel.organico { background-color: rgba(139, 69, 19, 0.9); } /* Brown */
+        #predictionLabel.reciclable { background-color: rgba(52, 199, 89, 0.9); } /* Green */
+        #predictionLabel.no-reciclable { background-color: rgba(255, 69, 58, 0.9); } /* Red */
+        #predictionLabel.no-detectado { background-color: rgba(100, 100, 100, 0.9); } /* Grey */
+
+
+        /* Buttons - Material Design Inspired */
+        .controls {
+            margin-top: 25px;
             display: flex;
+            gap: 15px;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
         }
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            background-color: #34c759;
+
+        button, .file-upload-button {
+            background-color: var(--primary-color);
             color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: clamp(14px, 2.5vw, 16px);
-            display: flex;
+            font-size: 1.1rem;
+            display: inline-flex;
             align-items: center;
             gap: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            animation: slideUpFade 0.5s ease-in forwards;
-            position: relative;
-            overflow: hidden;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
         }
-        .btn:nth-child(1) { animation-delay: 0.1s; }
-        .btn:nth-child(2) { animation-delay: 0.2s; }
-        .btn:nth-child(3) { animation-delay: 0.3s; }
-        .btn:hover {
-            transform: scale(1.05) translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            animation: pulse 1s infinite;
+        button:hover, .file-upload-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.25);
         }
-        .btn:after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255,255,255,0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.3s, height 0.3s;
+        button:active, .file-upload-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .btn:active:after {
-            width: 200px;
-            height: 200px;
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
         }
-        .btn i {
-            font-size: clamp(18px, 3vw, 20px);
-            transition: transform 0.3s;
+
+        .material-icons {
+            font-size: 1.4rem;
         }
-        .btn:hover i {
-            transform: translateX(5px);
+
+        /* UPLOAD SECTION */
+        #outputImage {
+            max-width: 100%;
+            height: auto;
+            border: 3px solid #007bff;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
         }
-        #result-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
-            z-index: 100;
+        body.dark-mode #outputImage {
+            border: 3px solid #66b3ff;
         }
-        #result-modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        .modal-content {
-            background-color: #fff;
+
+        /* ABOUT / HOW TO USE / CONTACT SECTIONS - Initial state hidden */
+        .info-section {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 20px;
             padding: 20px;
-            border-radius: 12px;
             text-align: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-            width: 90%;
-            max-width: 500px;
-            animation: zoomIn 0.5s ease-in;
         }
-        .modal-content h2 {
-            color: #34c759;
-            margin-bottom: 20px;
+
+        .info-section.active {
+            display: flex; /* Show when active */
         }
-        .modal-content p {
-            font-size: clamp(18px, 3.5vw, 22px);
-            margin: 20px 0;
-        }
-        .close-btn {
-            background-color: #e0e0e0;
-            color: #333;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-        }
-        .close-btn:hover {
-            background-color: #d0d0d0;
-            transform: scale(1.05) translateY(-2px);
-        }
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #34c759;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite, pulse 1.5s infinite;
-            margin: 20px auto;
-            display: none;
-        }
-        .history {
-            margin: 20px auto;
-            max-width: 90%;
-            text-align: left;
-            padding: 15px;
-            background-color: #fff;
+
+        .info-card {
+            background-color: var(--background-light);
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            animation: slideInUp 1s ease-in;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
+            text-align: left;
+            border: 1px solid var(--border-color-light);
+            animation: slideIn 0.6s ease-out;
         }
-        .history.dark-mode {
-            background-color: #2d3839;
-            color: #e0e0e0;
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-        .toggle-dark {
-            position: fixed;
-            top: 20px;
-            right: 70px;
-            padding: 10px;
-            background-color: #34c759;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            z-index: 1000;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            animation: bounceIn 1s ease-in;
-        }
-        .toggle-dark:hover {
-            background-color: #2ba84a;
-            transform: scale(1.1);
-        }
-        .help-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #34c759;
-            color: white;
-            padding: 12px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            animation: bounce 2s infinite;
-        }
-        .help-tooltip {
-            position: absolute;
-            bottom: 60px;
-            right: 10px;
+
+        body.dark-mode .info-card {
             background-color: #333;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            animation: fadeInUp 0.5s ease-in;
+            border: 1px solid var(--border-color-dark);
         }
-        .help-btn:hover .help-tooltip {
-            display: block;
-            opacity: 1;
+
+        .info-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            font-weight: 500;
         }
-        .footer {
-            text-align: center;
-            padding: 15px;
-            background-color: #fff;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.15);
-            position: relative;
-            bottom: 0;
+        body.dark-mode .info-card h3 {
+            color: var(--primary-light);
+        }
+
+        .info-card p, .info-card ul {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+        body.dark-mode .info-card p, body.dark-mode .info-card ul {
+            color: var(--text-color-dark);
+        }
+        .info-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .info-card ul li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .info-card ul li .material-icons {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-top: 2px;
+        }
+        body.dark-mode .info-card ul li .material-icons {
+            color: var(--primary-light);
+        }
+
+        /* GOOGLE MAPS */
+        #map {
             width: 100%;
-            font-size: clamp(12px, 2vw, 14px);
-            color: #666;
-            transition: background-color 0.5s;
-            animation: slideInUp 1s ease-in;
+            height: 400px; /* Fixed height for the map */
+            border-radius: 8px;
+            border: 1px solid var(--border-color-light);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 20px;
         }
-        .footer.dark-mode {
-            background-color: #2d3839;
-            color: #e0e0e0;
+        body.dark-mode #map {
+            border: 1px solid var(--border-color-dark);
         }
-        canvas#particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
-        .guide-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: clamp(14px, 2.5vw, 16px);
-            animation: fadeInUp 1s ease-in;
-        }
-        .guide-table th, .guide-table td {
-            padding: 10px;
-            border: 1px solid #e0e0e0;
-            text-align: left;
-        }
-        .guide-table th {
-            background-color: #34c759;
-            color: white;
-        }
-        .stats-container {
+
+        /* STATS SECTION */
+        .stats-section {
+            background-color: var(--card-background-light);
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+            padding: 25px;
+            margin: 30px auto;
+            max-width: 1200px;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-around;
-            margin: 20px 0;
             gap: 20px;
+            animation: fadeIn 0.8s ease-out 0.2s backwards; /* Delayed animation */
         }
-        .stat {
+        body.dark-mode .stats-section {
+            background-color: var(--card-background-dark);
+        }
+
+        .stat-item {
             text-align: center;
-            animation: slideUpFade 1.5s ease-in;
+            background-color: var(--background-light);
+            padding: 20px;
+            border-radius: 10px;
             flex: 1;
-            min-width: 120px;
+            min-width: 220px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color-light);
         }
-        .stat-number {
-            font-size: clamp(36px, 6vw, 48px);
-            color: #34c759;
+        body.dark-mode .stat-item {
+            background-color: #333;
+            border: 1px solid var(--border-color-dark);
+        }
+
+        .stat-item h3 {
+            color: #007bff; /* Blue for titles */
+            font-size: 1.6rem;
+            margin-bottom: 12px;
             font-weight: 500;
         }
-        .gallery {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
+        body.dark-mode .stat-item h3 {
+            color: #66b3ff;
         }
-        .gallery img {
-            width: clamp(150px, 30vw, 200px);
-            height: clamp(100px, 20vw, 150px);
-            object-fit: cover;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease;
-            opacity: 0;
-            animation: slideUpFade 1s ease-in forwards;
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
         }
-        .gallery img:hover {
-            transform: scale(1.1);
+        body.dark-mode .stat-value {
+            color: var(--primary-light);
         }
-        .gallery img:nth-child(1) { animation-delay: 0.2s; }
-        .gallery img:nth-child(2) { animation-delay: 0.4s; }
-        .gallery img:nth-child(3) { animation-delay: 0.6s; }
-        .contact-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-width: 90%;
-            margin: 20px auto;
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 25px;
+            margin-top: auto; /* Push footer to the bottom */
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 0.95rem;
+            position: relative;
+            z-index: 1000;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
         }
-        .contact-form input, .contact-form textarea {
-            padding: 10px 0;
-            border: none;
-            border-bottom: 1px solid #ccc;
-            background-color: transparent;
-            font-size: clamp(14px, 2.5vw, 16px);
-            transition: border-color 0.3s ease;
-            animation: slideInUp 0.5s ease-in;
+        body.dark-mode footer {
+            background: rgba(20, 20, 20, 0.9);
         }
-        .contact-form input:focus, .contact-form textarea:focus {
-            border-bottom: 2px solid #34c759;
-            outline: none;
-        }
-        .contact-form button {
-            align-self: center;
-        }
-        .success-message {
-            display: none;
-            color: #34c759;
-            font-size: clamp(16px, 3vw, 18px);
-            margin-top: 20px;
-            animation: zoomIn 1s ease-in;
-        }
-        .wave-background {
+
+        /* THEME TOGGLE (FAB Button) */
+        .theme-toggle {
             position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            overflow: hidden;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--accent-color);
+            color: #333;
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 1100;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
         }
-        .bottom-waves {
-            bottom: 0;
+        .theme-toggle:hover {
+            background-color: #fbc02d; /* Darker amber */
+            transform: scale(1.08);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
         }
-        .top-waves {
-            top: 0;
+        body.dark-mode .theme-toggle {
+            background-color: #9E9E9E; /* Grey for dark mode toggle */
+            color: white;
         }
-        .wave {
-            position: absolute;
-            width: 400%;
-            height: 100px;
-            animation: wave-animation 15s infinite linear;
+        body.dark-mode .theme-toggle:hover {
+            background-color: #757575;
         }
-        .bottom-waves .wave:nth-child(1) { background: #2e8b57; bottom: -40px; animation-duration: 20s; }
-        .bottom-waves .wave:nth-child(2) { background: #3a9d6a; bottom: 0px; animation-duration: 18s; }
-        .bottom-waves .wave:nth-child(3) { background: #46af7d; bottom: 40px; animation-duration: 16s; }
-        .top-waves .wave:nth-child(1) { background: #2e8b57; top: -40px; animation-duration: 20s; transform: rotate(180deg); }
-        .top-waves .wave:nth-child(2) { background: #3a9d6a; top: 0px; animation-duration: 18s; transform: rotate(180deg); }
-        .top-waves .wave:nth-child(3) { background: #46af7d; top: 40px; animation-duration: 16s; transform: rotate(180deg); }
-        .wave::before {
-            content: '';
-            position: absolute;
-            top: -50px;
-            left: 0;
-            width: 100%;
-            height: 100px;
-            background: inherit;
-            border-radius: 50% 50% 0 0;
+
+        /* ANIMATIONS REMOVED FOR ALL DEVICES (Olas y Particulas) */
+        .wave-background, #particles {
+            display: none !important;
         }
-        @keyframes wave-animation {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
-        }
-        .zoom-on-hover:hover {
-            transform: scale(1.1);
-            transition: transform 0.3s ease;
-        }
-        /* Modo oscuro para olas y partículas */
-        body.dark-mode .wave {
-            filter: brightness(0.8);
-        }
-        body.dark-mode #particles {
-            filter: brightness(0.8);
-        }
-        /* Media Queries para Responsividad */
+
+        /* RESPONSIVE DESIGN */
         @media (max-width: 768px) {
-            .navbar {
-                justify-content: flex-start;
-                padding: 10px;
+            header {
+                padding: 1rem 15px;
             }
-            .navbar a {
-                display: none;
+            header h1 {
+                font-size: 2rem;
             }
-            .navbar.open a {
-                display: block;
-                margin: 10px 20px;
+            .menu-button {
+                font-size: 2rem;
             }
-            .menu-toggle {
-                display: block;
+            .sidenav {
+                width: 100%; /* Full width on smaller screens */
+                right: -100%; /* Hidden off-screen to the right */
             }
-            .navbar.open {
-                flex-direction: column;
-                align-items: flex-start;
+            .sidenav.open {
+                right: 0;
             }
-            .section {
-                margin: 60px 10px 20px;
+            .sidenav a {
+                font-size: 1.2rem;
+                padding: 12px 20px;
+            }
+            .sidenav .closebtn {
+                font-size: 2.5rem;
+                right: 15px;
+            }
+            main {
+                margin: 15px auto;
                 padding: 15px;
+                gap: 20px;
             }
-            .media-container {
-                max-width: 100%;
-            }
-            .btn-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            .btn {
-                width: 80%;
-                justify-content: center;
-            }
-            .stats-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            .gallery {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
-        @media (max-width: 480px) {
-            h1 {
-                font-size: clamp(28px, 8vw, 36px);
+            .section-card {
+                padding: 20px;
+                min-width: unset; /* Remove min-width on small screens */
             }
             h2 {
-                font-size: clamp(20px, 6vw, 28px);
+                font-size: 1.8rem;
             }
-            .btn {
-                width: 90%;
-                font-size: clamp(12px, 4vw, 14px);
+            .controls {
+                flex-direction: column;
+                gap: 10px;
             }
-            .gallery img {
-                width: 100%;
-                height: auto;
+            button, .file-upload-button {
+                padding: 10px 20px;
+                font-size: 1rem;
             }
-            .contact-form input, .contact-form textarea {
-                font-size: clamp(12px, 3vw, 14px);
+            /* Adjustments for #predictionLabel on mobile */
+            #predictionLabel {
+                font-size: 1.6rem; /* Smaller font on mobile */
+                padding: 10px; /* Reduced padding on mobile */
             }
-        }
-        /* Animaciones */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideInUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes slideUpFade { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes bounceIn { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideInDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } 60% { transform: translateY(-5px); } }
-        @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes slideInLeft { from { transform: translateX(-50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideInRight { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* Estilos para la etiqueta de categoría sobre la imagen/video */
-        #categoryLabel {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 2.5em; /* Visible en grande */
-            font-weight: bold;
-            display: none; /* Oculto por defecto */
-            z-index: 50; /* Asegura que esté sobre el canvas */
-            white-space: nowrap;
-            text-align: center;
+            .stats-section {
+                padding: 20px;
+                margin: 20px auto;
+            }
+            .stat-item {
+                min-width: 150px;
+                padding: 15px;
+            }
+            .stat-item h3 {
+                font-size: 1.3rem;
+            }
+            .stat-value {
+                font-size: 2.2rem;
+            }
+            .theme-toggle {
+                width: 45px;
+                height: 45px;
+                font-size: 1.4rem;
+                bottom: 15px;
+                right: 15px;
+            }
         }
     </style>
 </head>
 <body>
-  <div class="wave-background bottom-waves">
-    <div class="wave"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
-  </div>
-  <div class="wave-background top-waves">
-    <div class="wave"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
-  </div>
-  <canvas id="particles"></canvas>
+    <header>
+        <h1>VisionAI</h1>
+        <button class="menu-button" onclick="openNav()">
+            <span class="material-icons">menu</span>
+        </button>
+    </header>
 
-  <div class="navbar" id="navbar">
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-    <a class="zoom-on-hover" onclick="scrollToSection('home')">Inicio</a>
-    <a class="zoom-on-hover" onclick="scrollToSection('about')">Sobre Nosotros</a>
-    <a class="zoom-on-hover" onclick="scrollToSection('howto')">Cómo Funciona</a>
-    <a class="zoom-on-hover" onclick="scrollToSection('contact')">Contacto</a>
-  </div>
-  <button class="toggle-dark zoom-on-hover" onclick="toggleDarkMode()">🌙</button>
-
-  <div id="home" class="section">
-    <h1>VisionAI</h1>
-    <p>Clasifica tus residuos de forma inteligente</p>
-    <div class="media-container" style="position: relative; display: inline-block;">
-      <video id="video" autoplay muted playsinline style="display: block; width: 100%; max-width: 640px; height: auto;"></video>
-      <canvas id="canvas" style="position: absolute; top: 0; left: 0;"></canvas>
-      <div id="categoryLabel"></div> </div>
-    <div class="btn-container">
-      <button class="btn zoom-on-hover" onclick="startCamera()" style="background-color: #4285f4;">
-        <i class="material-icons">videocam</i> Iniciar Cámara
-      </button>
-      <input type="file" id="upload" accept="image/*" style="display: none;" onchange="uploadImage()">
-      <button class="btn zoom-on-hover" onclick="document.getElementById('upload').click()" style="background-color: #34c759;">
-        <i class="material-icons">upload</i> Subir Imagen
-      </button>
-      <button class="btn zoom-on-hover" onclick="stopCamera()" style="background-color: #ff6b6b; display: none;" id="stopCamera">
-        <i class="material-icons">videocam_off</i> Detener Cámara
-      </button>
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="#home-section" onclick="showSection('home-section'); closeNav();"><span class="material-icons">home</span> Inicio</a>
+        <a href="#about-section" onclick="showSection('about-section'); closeNav();"><span class="material-icons">info</span> Sobre Nosotros</a>
+        <a href="#how-to-use-section" onclick="showSection('how-to-use-section'); closeNav();"><span class="material-icons">help</span> ¿Cómo se usa?</a>
+        <a href="#contact-section" onclick="showSection('contact-section'); closeNav();"><span class="material-icons">mail</span> Contacto</a>
+        <a href="#location-section" onclick="showSection('location-section'); closeNav();"><span class="material-icons">location_on</span> Ubicación</a>
     </div>
-    <div class="loader" id="loader" style="display: none;">Cargando modelo...</div>
-    <div class="history" id="history">
-      <h3>Historial de Análisis de Imágenes Subidas
-        <button class="btn zoom-on-hover" style="float: right; padding: 8px 16px;" onclick="clearHistory()">Borrar</button>
-      </h3>
-      <ul id="history-list"></ul>
-    </div>
-  </div>
 
-  <div id="about" class="section">
-    <h2>Sobre Nosotros</h2>
-    <p>VisionAI es una herramienta innovadora para clasificar residuos y fomentar el reciclaje. Nuestra misión es reducir el impacto ambiental mediante tecnología inteligente y educación ambiental.</p>
-    <div class="stats-container">
-      <div class="stat"><span class="stat-number" id="stat1">0</span>
-        <p>Toneladas Clasificadas</p>
-      </div>
-      <div class="stat"><span class="stat-number" id="stat2">0</span>
-        <p>Usuarios Activos</p>
-      </div>
-      <div class="stat"><span class="stat-number" id="stat3">0</span>
-        <p>Impacto Positivo</p>
-      </div>
-    </div>
-  </div>
+    <main id="main-content">
+        <section id="home-section" class="section-card active">
+            <h2>Clasificador de Residuos</h2>
+            <p>Usa tu cámara o sube una imagen para identificar el tipo de residuo.</p>
+            <div class="video-container">
+                <video id="webcam" autoplay playsinline muted></video>
+                <div id="predictionLabel"></div>
+            </div>
+            <div class="controls">
+                <button id="startCameraButton"><span class="material-icons">videocam</span> Iniciar Cámara</button>
+                <button id="stopCameraButton" style="display: none;"><span class="material-icons">videocam_off</span> Detener Cámara</button>
+                <input type="file" id="uploadInput" accept="image/*" style="display: none;">
+                <button id="uploadButton" class="file-upload-button"><span class="material-icons">upload_file</span> Subir Imagen</button>
+            </div>
+            <img id="outputImage" src="#" alt="Imagen subida" style="display: none;">
+            <button id="processImageButton" style="display: none;"><span class="material-icons">check_circle</span> Procesar Imagen</button>
+            <button id="clearImageButton" style="display: none;"><span class="material-icons">clear</span> Limpiar</button>
+        </section>
 
-  <div id="howto" class="section">
-    <h2>Cómo Funciona</h2>
-    <p>Sigue estos pasos para clasificar tus residuos:</p>
-    <ol style="text-align: left; max-width: 600px; margin: 20px auto;">
-      <li>Inicia la cámara para detección en tiempo real o sube una imagen.</li>
-      <li>Para la cámara, posiciona el objeto en el encuadre para verlo clasificado.</li>
-      <li>Para imágenes, sube el archivo y mira su clasificación.</li>
-    </ol>
-    <div class="gallery">
-      <img src="plastico.jpg" alt="Plástico" class="zoom-on-hover">
-      <img src="organico.jpg" alt="Orgánico" class="zoom-on-hover">
-      <img src="papel.jpg" alt="Papel" class="zoom-on-hover">
-    </div>
-    <h3>Guía de Reciclaje</h3>
-    <table class="guide-table">
-      <tr>
-        <th>Categoría</th>
-        <th>Ejemplos</th>
-      </tr>
-      <tr>
-        <td>Reciclable</td>
-        <td>Botellas de plástico, papel, cartón</td>
-      </tr>
-      <tr>
-        <td>No Reciclable</td>
-        <td>Plásticos sucios, pañales, espejos</td>
-      </tr>
-      <tr>
-        <td>Orgánico</td>
-        <td>Restos de comida, cáscaras, hojas</td>
-      </tr>
-    </table>
-  </div>
+        <section id="about-section" class="info-section">
+            <h2>Sobre Nosotros</h2>
+            <div class="info-card">
+                <h3>Nuestra Misión</h3>
+                <p>En VisionAI, creemos en la tecnología como herramienta para un futuro más sostenible. Nuestra misión es facilitar la correcta clasificación de residuos a través de la inteligencia artificial, empoderando a individuos y comunidades para que contribuyan activamente al reciclaje y la reducción del impacto ambiental.</p>
+            </div>
+            <div class="info-card">
+                <h3>¿Quiénes Somos?</h3>
+                <p>Somos un equipo apasionado de desarrolladores, ingenieros y entusiastas del medio ambiente, dedicados a crear soluciones innovadoras que aborden los desafíos actuales de la gestión de residuos. VisionAI es el resultado de un proyecto de semestre enfocado en aplicar el aprendizaje automático para el bien del planeta.</p>
+            </div>
+            <div class="info-card">
+                <h3>Nuestra Visión</h3>
+                <p>Visualizamos un mundo donde la correcta clasificación de residuos es intuitiva, accesible y una parte integral de la vida diaria de todos, contribuyendo significativamente a la economía circular y la preservación de nuestros recursos naturales.</p>
+            </div>
+        </section>
 
-  <div id="contact" class="section">
-    <h2>Contacto</h2>
-    <p>¿Tienes preguntas? ¡Contáctanos!</p>
-    <form class="contact-form" onsubmit="submitForm(event)">
-      <input type="text" placeholder="Nombre" required>
-      <input type="email" placeholder="Correo Electrónico" required>
-      <textarea placeholder="Mensaje" rows="5" required></textarea>
-      <button class="btn zoom-on-hover" type="submit">Enviar</button>
-    </form>
-    <div class="success-message" id="success-message" style="display: none;">¡Mensaje enviado con éxito!</div>
-  </div>
+        <section id="how-to-use-section" class="info-section">
+            <h2>¿Cómo se Usa?</h2>
+            <div class="info-card">
+                <h3>Clasificación con Cámara</h3>
+                <ul>
+                    <li><span class="material-icons">looks_one</span> Haz clic en "Iniciar Cámara".</li>
+                    <li><span class="material-icons">looks_two</span> Coloca el objeto frente a la cámara, asegurándote de que esté bien iluminado y ocupe una parte significativa del encuadre.</li>
+                    <li><span class="material-icons">looks_3</span> Espera unos segundos y la aplicación mostrará en pantalla grande si el objeto es "Orgánico", "Reciclable" o "No Reciclable".</li>
+                    <li><span class="material-icons">looks_4</span> Haz clic en "Detener Cámara" cuando hayas terminado.</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>Clasificación con Imagen Subida</h3>
+                <ul>
+                    <li><span class="material-icons">looks_one</span> Haz clic en "Subir Imagen" y selecciona una foto de tu dispositivo.</li>
+                    <li><span class="material-icons">looks_two</span> Una vez que la imagen se cargue, haz clic en "Procesar Imagen".</li>
+                    <li><span class="material-icons">looks_3</span> La aplicación analizará la imagen y mostrará la categoría del residuo.</li>
+                    <li><span class="material-icons">looks_4</span> Haz clic en "Limpiar" para subir otra imagen.</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>Consejos para Mejor Detección</h3>
+                <ul>
+                    <li><span class="material-icons">lightbulb</span> Asegúrate de que haya buena iluminación.</li>
+                    <li><span class="material-icons">center_focus_strong</span> El objeto debe estar claro y centrado.</li>
+                    <li><span class="material-icons">clear_all</span> Evita fondos muy cargados que puedan confundir al modelo.</li>
+                    <li><span class="material-icons">compare</span> Clasifica un objeto a la vez para mayor precisión.</li>
+                </ul>
+            </div>
+        </section>
 
-  <div id="result-modal">
-    <div class="modal-content">
-      <h2>Resultado del Análisis</h2>
-      <p id="result-text"></p>
-      <button class="close-btn zoom-on-hover" onclick="closeModal()">Cerrar</button>
-    </div>
-  </div>
+        <section id="contact-section" class="info-section">
+            <h2>Contacto</h2>
+            <div class="info-card">
+                <h3>¿Preguntas o Sugerencias?</h3>
+                <p>Nos encantaría escuchar de ti. Si tienes alguna pregunta, sugerencia o deseas colaborar, no dudes en contactarnos.</p>
+                <ul>
+                    <li><span class="material-icons">email</span> Email: info@visionai.com</li>
+                    <li><span class="material-icons">phone</span> Teléfono: +502 1234 5678</li>
+                    <li><span class="material-icons">public</span> Sitio Web: www.visionai.com (ejemplo)</li>
+                    <li><span class="material-icons">location_on</span> Dirección: 123 Calle de la Innovación, Ciudad de Guatemala, Guatemala</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>Síguenos en Redes Sociales</h3>
+                <p>Mantente al día con nuestras últimas noticias y actualizaciones:</p>
+                <ul>
+                    <li><span class="material-icons">facebook</span> Facebook: /VisionAIGT</li>
+                    <li><span class="material-icons">link</span> Instagram: @VisionAIGT</li>
+                    <li><span class="material-icons">link</span> Twitter: @VisionAIGT</li>
+                </ul>
+            </div>
+        </section>
 
-  <button class="help-btn zoom-on-hover">
-    <i class="material-icons">help_outline</i>
-    <span class="help-tooltip">Usa la cámara o sube una imagen para clasificar residuos.</span>
-  </button>
+        <section id="location-section" class="info-section">
+            <h2>Nuestra Ubicación</h2>
+            <div class="info-card">
+                <p>Puedes encontrarnos en el siguiente punto de referencia (ejemplo):</p>
+                <div id="map"></div>
+                <p style="margin-top: 15px;">**Nota:** Este es un ejemplo de ubicación. Para ver tu ubicación real, necesitarás una API Key de Google Maps y configurar un mapa interactivo.</p>
+            </div>
+        </section>
+    </main>
 
-  <div class="footer">
-    <p>© 2025 VisionAI. Todos los derechos reservados.</p>
-  </div>
+    <section class="stats-section">
+        <div class="stat-item">
+            <h3>Objetos Clasificados</h3>
+            <div id="stat1" class="stat-value">0</div>
+        </div>
+        <div class="stat-item">
+            <h3>Reducción de CO2 (kg)</h3>
+            <div id="stat2" class="stat-value">0</div>
+        </div>
+        <div class="stat-item">
+            <h3>Porcentaje Reciclado</h3>
+            <div id="stat3" class="stat-value">0%</div>
+        </div>
+    </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <footer>
+        <p>© 2024 VisionAI. Todos los derechos reservados. Desarrollado con ❤️ y IA.</p>
+    </footer>
 
-<script>
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const loader = document.getElementById('loader');
-  const stopCameraButton = document.getElementById('stopCamera');
-  const categoryLabel = document.getElementById('categoryLabel'); // Nueva etiqueta para la categoría principal
-  const resultModal = document.getElementById('result-modal');
-  const resultText = document.getElementById('result-text');
-  const historyList = document.getElementById('history-list');
-  let model = null;
-  let animationFrameId = null; // Para manejar el bucle de requestAnimationFrame
+    <button id="themeToggle" class="theme-toggle">
+        <span class="material-icons">dark_mode</span>
+    </button>
 
-  // Aquí van las categorías de reciclaje
- const recyclingCategories = {
-    'bottle': 'reciclable (plástico o vidrio)',
-    'cup': 'reciclable (plástico o papel)',
-    'can': 'reciclable (metal)',
-    'bowl': 'no reciclable (si es cerámica/vidrio roto) / reciclable (si es de plástico limpio)',
-    'plate': 'no reciclable (si es cerámica/vidrio roto) / reciclable (si es de plástico limpio)',
-    'fork': 'no reciclable (plástico un solo uso) / reciclable (metal)',
-    'spoon': 'no reciclable (plástico un solo uso) / reciclable (metal)',
-    'knife': 'no reciclable (plástico un solo uso) / reciclable (metal)',
-    'apple': 'orgánico',
-    'banana': 'orgánico',
-    'orange': 'orgánico',
-    'broccoli': 'orgánico',
-    'carrot': 'orgánico',
-    'pizza': 'orgánico (restos de comida)',
-    'donut': 'orgánico (restos de comida)',
-    'cake': 'orgánico (restos de comida)',
-    'sandwich': 'orgánico (restos de comida)',
-    'hot dog': 'orgánico (restos de comida)',
-    'toilet': 'no reciclable (sanitario)',
-    'couch': 'no reciclable (mueble voluminoso)',
-    'bed': 'no reciclable (mueble voluminoso)',
-    'chair': 'reciclable (si es de madera/metal simple) / no reciclable (variado)',
-    'tv': 'no reciclable (RAEE)',
-    'laptop': 'no reciclable (RAEE)',
-    'cell phone': 'no reciclable (RAEE)',
-    'keyboard': 'no reciclable (RAEE)',
-    'mouse': 'no reciclable (RAEE)',
-    'remote': 'no reciclable (RAEE)',
-    'microwave': 'no reciclable (RAEE)',
-    'oven': 'no reciclable (RAEE)',
-    'sink': 'no reciclable (construcción)',
-    'refrigerator': 'no reciclable (RAEE)',
-    'book': 'reciclable (papel)',
-    'potted plant': 'orgánico (planta) / reciclable (maceta si es de plástico/cerámica)',
-    'backpack': 'no reciclable (textil/plástico mezclado)',
-    'handbag': 'no reciclable (textil/cuero)',
-    'tie': 'reciclable (textil si es algodón/lana) / no reciclable (mezclado)',
-    'suitcase': 'no reciclable (variado)',
-    'frisbee': 'reciclable (plástico) / no reciclable (si es de goma)',
-    'skis': 'no reciclable (deporte)',
-    'baseball bat': 'reciclable (madera) / no reciclable (compuesto)',
-    'baseball glove': 'no reciclable (cuero)',
-    'surfboard': 'no reciclable (deporte)',
-    'tennis racket': 'no reciclable (deporte)',
-    'umbrella': 'no reciclable (mezclado)',
-    'fire hydrant': 'reciclable (metal grande)',
-    'stop sign': 'reciclable (metal grande)',
-    'parking meter': 'reciclable (metal grande)',
-    'bench': 'reciclable (madera/metal) / no reciclable (compuesto)',
-    'traffic light': 'no reciclable (electrónica)',
-    'fire hose': 'no reciclable (textil/goma)',
-    'clothing': 'reciclable (textil limpio) / no reciclable (textil sucio/mezclado)',
-    'paper': 'reciclable (papel)',
-    'cardboard': 'reciclable (cartón)',
-    'plastic bag': 'no reciclable (plástico film)',
-    'trash can': 'no reciclable (depende del material)',
-    'fridge': 'no reciclable (RAEE)',
-    'remote': 'no reciclable (RAEE)',
-    'mouse': 'no reciclable (RAEE)',
-    'keyboard': 'no reciclable (RAEE)',
-    'scissors': 'reciclable (metal) / no reciclable (plástico/mixto)',
-    'toothbrush': 'no reciclable (plástico mixto)',
-    'hair drier': 'no reciclable (RAEE)',
-    'teddy bear': 'no reciclable (textil)',
-    'wine glass': 'reciclable (vidrio)',
-    'beer bottle': 'reciclable (vidrio)',
-    'soda can': 'reciclable (metal)',
-    'battery': 'no reciclable (desecho peligroso)',
-    'light bulb': 'no reciclable (desecho peligroso)',
-    'fluorescent light': 'no reciclable (desecho peligroso)',
-    'tire': 'no reciclable (desecho especial)',
-    'bicycle': 'reciclable (metal)',
-    'desk': 'reciclable (madera/metal) / no reciclable (mixto)',
-    'table': 'reciclable (madera/metal) / no reciclable (mixto)',
-    'sofa': 'no reciclable (mueble voluminoso)',
-    'cabinet': 'reciclable (madera/metal) / no reciclable (mixto)',
-    'shelf': 'reciclable (madera/metal) / no reciclable (mixto)',
-    'plant': 'orgánico (si es planta) / no reciclable (maceta si no es reciclable)',
-    'flower': 'orgánico',
-    'light': 'no reciclable (RAEE)',
-    'fan': 'no reciclable (RAEE)',
-    'toaster': 'no reciclable (RAEE)',
-    'blender': 'no reciclable (RAEE)',
-    'clock': 'no reciclable (RAEE o mixto)',
-    'vase': 'reciclable (vidrio/cerámica)',
-    'pen': 'no reciclable (plástico/mixto)',
-    'pencil': 'orgánico (madera) / no reciclable (si tiene borrador/mina)',
-    'eraser': 'no reciclable (goma)',
-    'toy': 'no reciclable (plástico mixto) / reciclable (si es de madera simple)',
-    'doll': 'no reciclable (plástico/textil)',
-    'stuffed animal': 'no reciclable (textil)',
-    'wallet': 'no reciclable (cuero/textil)',
-    'coin': 'reciclable (metal)',
-    'box': 'reciclable (cartón) / no reciclable (si está encerado o sucio)',
-    'bag': 'reciclable (papel) / no reciclable (plástico o mixto)',
-    'magazine': 'reciclable (papel)',
-    'newspaper': 'reciclable (papel)',
-    'jar': 'reciclable (vidrio)',
-    'tin can': 'reciclable (metal)',
-    'aluminum foil': 'reciclable (metal)',
-    'plastic container': 'reciclable (plástico)',
-    'food wrapper': 'no reciclable (plástico mezclado)',
-    'styrofoam': 'no reciclable',
-    'medical waste': 'no reciclable (peligroso)',
-    'diaper': 'no reciclable',
-    'ceramic': 'no reciclable (material inerte)',
-    'glass shard': 'no reciclable (peligroso, no para reciclaje común)',
-    'broken glass': 'no reciclable (peligroso, no para reciclaje común)',
-    'textile scrap': 'reciclable (si es algodón/lana limpio) / no reciclable (mezclado)',
-    'wood scrap': 'orgánico (si no tratado) / no reciclable (tratado)',
-    'metal scrap': 'reciclable (metal)',
-    'electronic waste': 'no reciclable (RAEE)',
-    'carton': 'reciclable (envase de bebida, si es limpio)',
-    'milk carton': 'reciclable (envase de bebida, si es limpio)',
-    'juice box': 'reciclable (envase de bebida, si es limpio)',
-    'egg carton': 'reciclable (papel) / orgánico (si es de celulosa y está sucio)',
-    'plastic film': 'no reciclable',
-    'bubble wrap': 'no reciclable',
-    'plastic wrapper': 'no reciclable',
-    'plastic cap': 'reciclable (plástico)',
-    'cork': 'orgánico (natural) / no reciclable (sintético)',
-    'coffee grounds': 'orgánico',
-    'tea bag': 'orgánico (si es solo tela) / no reciclable (con grapas o sintético)',
-    'vegetable peel': 'orgánico',
-    'fruit peel': 'orgánico',
-    'bones': 'orgánico',
-    'paper towel': 'orgánico (si está sucio) / no reciclable (limpio)',
-    'napkin': 'orgánico (si está sucio) / no reciclable (limpio)',
-    'cotton swab': 'no reciclable',
-    'razor': 'no reciclable (metal/plástico mixto)',
-    'aerosol can': 'reciclable (metal, si está vacío y sin presión)',
-    'paint can': 'no reciclable (desecho peligroso)',
-    'chemical container': 'no reciclable (desecho peligroso)',
-    'syringes': 'no reciclable (desecho peligroso)',
-    'gloves': 'no reciclable (látex/goma)',
-    'mask': 'no reciclable (sanitario)',
-    'fabric': 'reciclable (textil limpio) / no reciclable (mezclado)',
-    'rope': 'reciclable (fibra natural) / no reciclable (sintético)',
-    'shoes': 'no reciclable (mezclado)',
-    'slipper': 'no reciclable (textil/goma)',
-    'boot': 'no reciclable (cuero/goma)',
-    'helmet': 'no reciclable (plástico/compuesto)',
-    'goggles': 'reciclable (plástico) / no reciclable (mixto)',
-    'lighter': 'no reciclable (peligroso)',
-    'matches': 'orgánico (madera) / no reciclable (caja)',
-    'lighter fluid': 'no reciclable (peligroso)',
-    'charcoal': 'orgánico',
-    'ash': 'no reciclable',
-    'dust': 'orgánico',
-    'dirt': 'orgánico (si es solo tierra)',
-    'gravel': 'no reciclable (inerte)',
-    'sand': 'no reciclable (inerte)',
-    'concrete': 'no reciclable (construcción)',
-    'brick': 'no reciclable (construcción)',
-    'tile': 'no reciclable (construcción)',
-    'insulation': 'no reciclable (construcción)',
-    'pipes': 'reciclable (metal/plástico)',
-    'wires': 'reciclable (metal)',
-    'cables': 'reciclable (metal)',
-    'circuit board': 'no reciclable (RAEE)',
-    'speaker': 'no reciclable (RAEE)',
-    'headphones': 'no reciclable (RAEE)',
-    'earbuds': 'no reciclable (RAEE)',
-    'charger': 'no reciclable (RAEE)',
-    'power adapter': 'no reciclable (RAEE)',
-    'extension cord': 'no reciclable (RAEE)',
-    'router': 'no reciclable (RAEE)',
-    'modem': 'no reciclable (RAEE)',
-    'printer': 'no reciclable (RAEE)',
-    'scanner': 'no reciclable (RAEE)',
-    'fax machine': 'no reciclable (RAEE)',
-    'copy machine': 'no reciclable (RAEE)',
-    'projector': 'no reciclable (RAEE)',
-    'camera': 'no reciclable (RAEE)',
-    'camcorder': 'no reciclable (RAEE)',
-    'dvd player': 'no reciclable (RAEE)',
-    'vcr': 'no reciclable (RAEE)',
-    'game console': 'no reciclable (RAEE)',
-    'joystick': 'no reciclable (RAEE)',
-    'controller': 'no reciclable (RAEE)',
-    'microphone': 'no reciclable (RAEE)',
-    'speaker': 'no reciclable (RAEE)',
-    'amplifier': 'no reciclable (RAEE)',
-    'radio': 'no reciclable (RAEE)',
-    'walkie-talkie': 'no reciclable (RAEE)',
-    'gps': 'no reciclable (RAEE)',
-    'smartwatch': 'no reciclable (RAEE)',
-    'fitness tracker': 'no reciclable (RAEE)',
-    'drone': 'no reciclable (RAEE)',
-    'robot': 'no reciclable (RAEE)',
-    'solar panel': 'no reciclable (RAEE)',
-    'wind turbine': 'no reciclable (grandes componentes)',
-    'electric vehicle battery': 'no reciclable (peligroso, manejo especial)',
-    'light fixture': 'no reciclable (RAEE)',
-    'fan blade': 'no reciclable (plástico/metal)',
-    'motor': 'reciclable (metal) / no reciclable (aceites)',
-    'pump': 'reciclable (metal) / no reciclable (aceites)',
-    'valves': 'reciclable (metal)',
-    'pipes': 'reciclable (metal/plástico)',
-    'faucet': 'reciclable (metal)',
-    'shower head': 'reciclable (metal/plástico)',
-    'toilet paper roll': 'reciclable (cartón)',
-    'paper bag': 'reciclable (papel)',
-    'cereal box': 'reciclable (cartón)',
-    'shoe box': 'reciclable (cartón)',
-    'pizza box': 'orgánico (si está sucio de grasa) / reciclable (si está limpio)',
-    'medicine bottle': 'no reciclable (plástico contaminado) / reciclable (vidrio limpio)',
-    'perfume bottle': 'reciclable (vidrio)',
-    'shampoo bottle': 'reciclable (plástico)',
-    'detergent bottle': 'reciclable (plástico)',
-    'bleach bottle': 'no reciclable (químicos)',
-    'cleaning supply bottle': 'no reciclable (químicos)',
-    'paint can': 'no reciclable (peligroso)',
-    'motor oil bottle': 'no reciclable (peligroso)',
-    'antifreeze bottle': 'no reciclable (peligroso)',
-    'pesticide bottle': 'no reciclable (peligroso)',
-    'herbicide bottle': 'no reciclable (peligroso)',
-    'fertilizer bag': 'no reciclable (plástico mixto)',
-    'seed packet': 'reciclable (papel) / no reciclable (plástico)',
-    'gardening tools': 'reciclable (metal) / no reciclable (madera/plástico)',
-    'flower pot': 'reciclable (plástico/cerámica) / no reciclable (terracota)',
-    'watering can': 'reciclable (plástico/metal)',
-    'garden hose': 'no reciclable (goma/plástico)',
-    'shovel': 'reciclable (metal/madera)',
-    'rake': 'reciclable (metal/madera)',
-    'hoe': 'reciclable (metal/madera)',
-    'axe': 'reciclable (metal/madera)',
-    'hammer': 'reciclable (metal/madera)',
-    'screwdriver': 'reciclable (metal/plástico)',
-    'wrench': 'reciclable (metal)',
-    'pliers': 'reciclable (metal)',
-    'tape measure': 'reciclable (metal/plástico)',
-    'level': 'reciclable (metal/plástico)',
-    'saw': 'reciclable (metal/madera)',
-    'drill': 'no reciclable (RAEE)',
-    'power drill': 'no reciclable (RAEE)',
-    'sander': 'no reciclable (RAEE)',
-    'grinder': 'no reciclable (RAEE)',
-    'jigsaw': 'no reciclable (RAEE)',
-    'circular saw': 'no reciclable (RAEE)',
-    'lawn mower': 'no reciclable (motor)',
-    'leaf blower': 'no reciclable (motor)',
-    'weed trimmer': 'no reciclable (motor)',
-    'chainsaw': 'no reciclable (motor)',
-    'pressure washer': 'no reciclable (motor)',
-    'snow blower': 'no reciclable (motor)',
-    'grill': 'reciclable (metal)',
-    'propane tank': 'no reciclable (peligroso, requiere manejo especial)',
-    'picnic basket': 'no reciclable (mimbre/plástico)',
-    'cooler': 'no reciclable (plástico)',
-    'beach chair': 'reciclable (metal/tela) / no reciclable (variado)',
-    'tent': 'no reciclable (tela/metal mixto)',
-    'sleeping bag': 'no reciclable (textil)',
-    'camping stove': 'reciclable (metal) / no reciclable (combustible)',
-    'lantern': 'reciclable (metal/vidrio) / no reciclable (pilas)',
-    'flashlight': 'reciclable (metal/plástico) / no reciclable (pilas)',
-    'matches': 'orgánico (madera) / no reciclable (caja)',
-    'lighter': 'no reciclable (peligroso)',
-    'first aid kit': 'no reciclable (mixto)',
-    'bandages': 'no reciclable (sanitario)',
-    'medicine': 'no reciclable (farmacéutico)',
-    'syrup bottle': 'reciclable (vidrio/plástico) / no reciclable (remanentes)',
-    'pill bottle': 'no reciclable (plástico contaminado)',
-    'toothbrush': 'no reciclable (plástico mixto)',
-    'toothpaste tube': 'no reciclable (plástico/metal laminado)',
-    'shaving cream can': 'reciclable (metal, si está vacío)',
-    'razor blade': 'no reciclable (peligroso)',
-    'shaving brush': 'no reciclable (natural/sintético)',
-    'soap bar': 'orgánico (biodegradable) / no reciclable (envoltura)',
-    'liquid soap bottle': 'reciclable (plástico)',
-    'cotton balls': 'orgánico (algodón) / no reciclable (sintético)',
-    'q-tips': 'no reciclable',
-    'feminine hygiene products': 'no reciclable (sanitario)',
-    'contact lens case': 'no reciclable (plástico)',
-    'eyeglass case': 'reciclable (plástico/metal) / no reciclable (cuero)',
-    'sunglasses': 'no reciclable (plástico/metal mixto)',
-    'reading glasses': 'no reciclable (plástico/metal mixto)',
-    'makeup container': 'no reciclable (plástico/vidrio, mezclado)',
-    'lipstick tube': 'no reciclable (plástico/metal)',
-    'mascara tube': 'no reciclable (plástico)',
-    'nail polish bottle': 'no reciclable (peligroso)',
-    'perfume bottle': 'reciclable (vidrio)',
-    'hairspray can': 'reciclable (metal, si está vacío)',
-    'deodorant stick': 'reciclable (plástico) / no reciclable (mixto)',
-    'lotion bottle': 'reciclable (plástico)',
-    'mouthwash bottle': 'reciclable (plástico)',
-    'dental floss container': 'reciclable (plástico) / no reciclable (hilo)',
-    'brush': 'no reciclable (plástico/madera)',
-    'comb': 'reciclable (plástico) / no reciclable (madera)',
-    'hair dryer': 'no reciclable (RAEE)',
-    'curling iron': 'no reciclable (RAEE)',
-    'straightener': 'no reciclable (RAEE)',
-    'electric toothbrush': 'no reciclable (RAEE)',
-    'electric shaver': 'no reciclable (RAEE)',
-    'epilator': 'no reciclable (RAEE)',
-    'electric razor': 'no reciclable (RAEE)',
-    'scale': 'no reciclable (RAEE) / reciclable (metal)',
-    'thermometer': 'no reciclable (peligroso, si es de mercurio)',
-    'blood pressure monitor': 'no reciclable (RAEE)',
-    'glucose meter': 'no reciclable (RAEE)',
-    'nebulizer': 'no reciclable (RAEE)',
-    'cpap machine': 'no reciclable (RAEE)',
-    'hearing aid': 'no reciclable (RAEE)',
-    'glasses': 'no reciclable (plástico/metal mixto)',
-    'contact lenses': 'no reciclable (plástico/biológico)',
-    'syringes': 'no reciclable (peligroso)',
-    'needles': 'no reciclable (peligroso)',
-    'medicine packaging': 'no reciclable (mezclado)',
-    'blister pack': 'no reciclable (plástico/aluminio)',
-    'pill blister pack': 'no reciclable (plástico/aluminio)',
-    'vial': 'reciclable (vidrio) / no reciclable (plástico médico)',
-    'ampoule': 'reciclable (vidrio)',
-    'medical tube': 'no reciclable (plástico médico)',
-    'gloves': 'no reciclable (látex/goma)',
-    'face mask': 'no reciclable (sanitario)',
-    'disposable mask': 'no reciclable (sanitario)',
-    'respirator': 'no reciclable (sanitario)',
-    'wipes': 'no reciclable (textil no degradable)',
-    'baby wipes': 'no reciclable (textil no degradable)',
-    'cleaning wipes': 'no reciclable (textil no degradable)',
-    'sponges': 'no reciclable (sintético) / orgánico (natural)',
-    'scrub brush': 'no reciclable (plástico/madera)',
-    'mop': 'no reciclable (textil/madera)',
-    'bucket': 'reciclable (plástico)',
-    'broom': 'no reciclable (plástico/madera)',
-    'dustpan': 'reciclable (plástico) / no reciclable (metal)',
-    'vacuum cleaner': 'no reciclable (RAEE)',
-    'robot vacuum': 'no reciclable (RAEE)',
-    'iron': 'no reciclable (RAEE)',
-    'ironing board': 'no reciclable (metal/tela)',
-    'sewing machine': 'no reciclable (RAEE)',
-    'fabric scraps': 'reciclable (textil limpio) / no reciclable (mezclado)',
-    'thread': 'orgánico (natural) / no reciclable (sintético)',
-    'buttons': 'no reciclable (plástico/metal)',
-    'zippers': 'no reciclable (metal/plástico)',
-    'needles': 'no reciclable (metal)',
-    'pins': 'no reciclable (metal)',
-    'tape': 'no reciclable (plástico)',
-    'glue bottle': 'reciclable (plástico, si vacío) / no reciclable (pegamento)',
-    'marker': 'no reciclable (plástico/tinta)',
-    'highlighter': 'no reciclable (plástico/tinta)',
-    'paint brush': 'no reciclable (madera/cerda) / reciclable (metal)',
-    'palette': 'no reciclable (plástico/madera)',
-    'crayons': 'no reciclable (cera)',
-    'play-doh': 'orgánico (masa)',
-    'modeling clay': 'no reciclable (sintético)',
-    'slime': 'no reciclable (polímero)',
-    'toy car': 'reciclable (metal) / no reciclable (plástico mixto)',
-    'building blocks': 'reciclable (plástico) / no reciclable (madera)',
-    'puzzle': 'reciclable (cartón) / no reciclable (madera)',
-    'board game': 'reciclable (cartón) / no reciclable (plástico)',
-    'playing cards': 'reciclable (papel) / no reciclable (plástico)',
-    'dice': 'no reciclable (plástico)',
-    'dominoes': 'reciclable (madera) / no reciclable (plástico)',
-    'jigsaw puzzle': 'reciclable (cartón)',
-    'action figure': 'no reciclable (plástico mixto)',
-    'barbie doll': 'no reciclable (plástico/tela)',
-    'stuffed animal': 'no reciclable (textil)',
-    'toy train': 'reciclable (metal) / no reciclable (plástico mixto)',
-    'toy airplane': 'reciclable (metal) / no reciclable (plástico mixto)',
-    'toy boat': 'reciclable (plástico) / no reciclable (madera)',
-    'ball': 'no reciclable (goma/plástico)',
-    'frisbee': 'reciclable (plástico)',
-    'jump rope': 'no reciclable (cuerda/madera)',
-    'hula hoop': 'reciclable (plástico)',
-    'roller skates': 'no reciclable (mixto)',
-    'skateboard': 'no reciclable (madera/metal)',
-    'scooter': 'no reciclable (metal/plástico)',
-    'bicycle helmet': 'no reciclable (plástico/espuma)',
-    'knee pads': 'no reciclable (plástico/textil)',
-    'elbow pads': 'no reciclable (plástico/textil)',
-    'sports ball': 'no reciclable (goma/cuero)',
-    'baseball': 'no reciclable (cuero/corcho)',
-    'basketball': 'no reciclable (goma/cuero)',
-    'football': 'no reciclable (cuero/sintético)',
-    'soccer ball': 'no reciclable (cuero/sintético)',
-    'tennis ball': 'no reciclable (goma/fieltro)',
-    'golf ball': 'no reciclable (plástico/goma)',
-    'bowling ball': 'no reciclable (plástico)',
-    'pool cue': 'reciclable (madera)',
-    'billiard ball': 'no reciclable (resina)',
-    'dartboard': 'no reciclable (madera/sisal)',
-    'darts': 'no reciclable (metal/plástico)',
-    'fishing rod': 'no reciclable (fibra de vidrio/metal)',
-    'fishing reel': 'no reciclable (metal/plástico)',
-    'fishing line': 'no reciclable (nylon)',
-    'fishing lure': 'no reciclable (plástico/metal)',
-    'tent': 'no reciclable (tela/metal)',
-    'sleeping bag': 'no reciclable (textil)',
-    'camping chair': 'reciclable (metal/tela) / no reciclable (variado)',
-    'cooler': 'no reciclable (plástico)',
-    'grill': 'reciclable (metal)',
-    'charcoal bag': 'no reciclable (plástico/papel)',
-    'lighter fluid bottle': 'no reciclable (peligroso)',
-    'matches': 'orgánico (madera) / no reciclable (caja)',
-    'firewood': 'orgánico (madera)',
-    'fire pit': 'reciclable (metal)',
-    'bug spray': 'no reciclable (químicos)',
-    'sunscreen bottle': 'reciclable (plástico) / no reciclable (remanentes)',
-    'insect repellent': 'no reciclable (químicos)',
-    'pool noodle': 'no reciclable (espuma)',
-    'swim goggles': 'reciclable (plástico)',
-    'swim cap': 'no reciclable (silicona/látex)',
-    'swimsuit': 'no reciclable (textil sintético)',
-    'beach towel': 'reciclable (textil) / no reciclable (si está muy dañado)',
-    'sandals': 'no reciclable (goma/plástico)',
-    'flip-flops': 'no reciclable (goma/plástico)',
-    'beach bag': 'no reciclable (textil/plástico)',
-    'sunglasses': 'no reciclable (plástico/metal mixto)',
-    'hat': 'reciclable (tela/papel) / no reciclable (mixto)',
-    'towel': 'reciclable (tela) / no reciclable (si está muy dañado)',
-    'blanket': 'reciclable (tela) / no reciclable (si está muy dañado)',
-    'pillow': 'no reciclable (relleno/tela)',
-    'bedding': 'reciclable (tela) / no reciclable (si está muy dañado)',
-    'curtains': 'reciclable (tela) / no reciclable (si está muy dañado)',
-    'rug': 'no reciclable (textil/plástico)',
-    'carpet': 'no reciclable (textil/plástico)',
-    'door mat': 'no reciclable (goma/fibra)',
-    'plant pot': 'reciclable (plástico/cerámica) / no reciclable (terracota)',
-    'gardening gloves': 'no reciclable (tela/goma)',
-    'seedlings': 'orgánico',
-    'soil bag': 'no reciclable (plástico)',
-    'compost bin': 'reciclable (plástico) / no reciclable (metal)',
-    'rain barrel': 'reciclable (plástico)',
-    'hose': 'no reciclable (goma/plástico)',
-    'sprinkler': 'reciclable (plástico/metal)',
-    'bird feeder': 'reciclable (plástico/madera) / no reciclable (mixto)',
-    'bird bath': 'reciclable (cerámica/hormigón) / no reciclable (piedra)',
-    'garden gnome': 'no reciclable (resina/cerámica)',
-    'fountain': 'no reciclable (plástico/piedra)',
-    'statue': 'reciclable (metal) / no reciclable (piedra/resina)',
-    'bench': 'reciclable (madera/metal)',
-    'picnic table': 'reciclable (madera/metal)',
-    'swing set': 'reciclable (metal/madera) / no reciclable (plástico)',
-    'slide': 'reciclable (plástico) / no reciclable (metal)',
-    'sandbox': 'reciclable (madera/plástico)',
-    'sandbox toys': 'reciclable (plástico)',
-    'wagon': 'reciclable (metal/madera) / no reciclable (plástico)',
-    'tricycle': 'reciclable (metal/plástico)',
-    'stroller': 'no reciclable (metal/tela/plástico)',
-    'baby car seat': 'no reciclable (plástico/tela)',
-    'high chair': 'reciclable (metal/plástico) / no reciclable (madera)',
-    'baby bottle': 'reciclable (plástico/vidrio) / no reciclable (tetina)',
-    'pacifier': 'no reciclable (silicona/plástico)',
-    'baby wipes container': 'reciclable (plástico)',
-    'diaper pail': 'reciclable (plástico)',
-    'crib': 'reciclable (madera/metal) / no reciclable (plástico)',
-    'changing table': 'reciclable (madera/metal) / no reciclable (plástico)',
-    'playpen': 'reciclable (metal/tela) / no reciclable (plástico)',
-    'baby monitor': 'no reciclable (RAEE)',
-    'breast pump': 'no reciclable (RAEE)',
-    'baby food jar': 'reciclable (vidrio)',
-    'baby food pouch': 'no reciclable (plástico laminado)',
-    'baby formula can': 'reciclable (metal)',
-    'baby formula container': 'reciclable (plástico)',
-    'baby clothes': 'reciclable (textil limpio) / no reciclable (sucio/dañado)',
-    'baby shoes': 'no reciclable (textil/cuero)',
-    'baby blankets': 'reciclable (textil) / no reciclable (si está muy dañado)',
-    'baby toys': 'reciclable (plástico/madera) / no reciclable (mixto)',
-    'rattle': 'reciclable (plástico)',
-    'teether': 'no reciclable (silicona/goma)',
-    'mobile': 'reciclable (plástico) / no reciclable (mixto)',
-    'swing': 'no reciclable (metal/plástico)',
-    'bouncer': 'no reciclable (metal/plástico/tela)',
-    'walker': 'no reciclable (plástico/metal)',
-    'potty training seat': 'reciclable (plástico)',
-    'step stool': 'reciclable (plástico/madera)',
-    'safety gate': 'reciclable (metal/madera) / no reciclable (plástico)',
-    'outlet cover': 'reciclable (plástico)',
-    'door stopper': 'no reciclable (goma)',
-    'cabinet lock': 'reciclable (plástico) / no reciclable (metal)',
-    'corner guard': 'no reciclable (espuma)',
-    'baby proofing items': 'reciclable (plástico) / no reciclable (mixto)',
-    'fire extinguisher': 'no reciclable (peligroso, manejo especial)',
-    'smoke detector': 'no reciclable (RAEE)',
-    'carbon monoxide detector': 'no reciclable (RAEE)',
-    'first aid supplies': 'no reciclable (sanitario)',
-    'band-aids': 'no reciclable (sanitario)',
-    'gauze': 'no reciclable (sanitario)',
-    'antiseptic wipes': 'no reciclable (sanitario)',
-    'rubbing alcohol bottle': 'reciclable (plástico) / no reciclable (líquido)',
-    'peroxide bottle': 'reciclable (plástico) / no reciclable (líquido)',
-    'cotton balls': 'orgánico (algodón) / no reciclable (sintético)',
-    'tweezers': 'reciclable (metal)',
-    'thermometer': 'no reciclable (peligroso, si es de mercurio)',
-    'heating pad': 'no reciclable (eléctrico)',
-    'ice pack': 'no reciclable (gel/plástico)',
-    'hot water bottle': 'reciclable (goma/plástico)',
-    'cane': 'reciclable (metal/madera)',
-    'crutches': 'reciclable (metal)',
-    'walker': 'reciclable (metal)',
-    'wheelchair': 'reciclable (metal) / no reciclable (tela/goma)',
-    'walker (medical)': 'reciclable (metal)',
-    'commode': 'no reciclable (plástico/metal)',
-    'bedpan': 'reciclable (plástico)',
-    'urinal': 'reciclable (plástico)',
-    'catheter bag': 'no reciclable (sanitario)',
-    'ostomy bag': 'no reciclable (sanitario)',
-    'adult diaper': 'no reciclable (sanitario)',
-    'medical tubing': 'no reciclable (plástico médico)',
-    'sharps container': 'no reciclable (peligroso)',
-    'prescription bottle': 'no reciclable (plástico contaminado)',
-    'over-the-counter medicine bottle': 'reciclable (vidrio/plástico limpio)',
-    'pill bottle': 'no reciclable (plástico contaminado)',
-    'vitamin bottle': 'reciclable (plástico/vidrio)',
-    'supplement bottle': 'reciclable (plástico/vidrio)',
-    'herbal supplement bottle': 'reciclable (plástico/vidrio)',
-    'tea bags (used)': 'orgánico',
-    'coffee grounds (used)': 'orgánico',
-    'egg shells': 'orgánico',
-    'fruit pits': 'orgánico',
-    'vegetable scraps': 'orgánico',
-    'meat scraps': 'orgánico',
-    'bones': 'orgánico',
-    'dairy products (spoiled)': 'orgánico',
-    'bread (stale)': 'orgánico',
-    'pasta (cooked)': 'orgánico',
-    'rice (cooked)': 'orgánico',
-    'grains (cooked)': 'orgánico',
-    'nuts (shells)': 'orgánico',
-    'seeds': 'orgánico',
-    'leaves': 'orgánico',
-    'grass clippings': 'orgánico',
-    'small branches': 'orgánico',
-    'flowers (wilted)': 'orgánico',
-    'potting soil': 'orgánico',
-    'wood chips': 'orgánico',
-    'sawdust': 'orgánico',
-    'paper towels (dirty)': 'orgánico (si no tienen químicos)',
-    'napkins (dirty)': 'orgánico (si no tienen químicos)',
-    'coffee filters (used)': 'orgánico',
-    'tea bags (used)': 'orgánico',
-    'pizza box (greasy)': 'orgánico',
-    'waxed paper': 'no reciclable',
-    'parchment paper': 'no reciclable',
-    'aluminum foil (dirty)': 'no reciclable',
-    'plastic cutlery': 'no reciclable',
-    'straws': 'no reciclable',
-    'plastic wrap': 'no reciclable',
-    'chip bags': 'no reciclable (plástico laminado)',
-    'candy wrappers': 'no reciclable (plástico laminado)',
-    'plastic bags (thin film)': 'no reciclable',
-    'bubble wrap': 'no reciclable',
-    'styrofoam containers': 'no reciclable',
-    'packing peanuts': 'no reciclable',
-    'disposable coffee cups': 'no reciclable (plástico/papel mezclado)',
-    'broken ceramics': 'no reciclable',
-    'light bulbs': 'no reciclable (peligroso)',
-    'batteries': 'no reciclable (peligroso)',
-    'electronics': 'no reciclable (RAEE)',
-    'ink cartridges': 'no reciclable (RAEE)',
-    'paint': 'no reciclable (peligroso)',
-    'solvents': 'no reciclable (peligroso)',
-    'pesticides': 'no reciclable (peligroso)',
-    'motor oil': 'no reciclable (peligroso)',
-    'antifreeze': 'no reciclable (peligroso)',
-    'fluorescent tubes': 'no reciclable (peligroso)',
-    'mercury thermometers': 'no reciclable (peligroso)',
-    'aerosol cans (full)': 'no reciclable (peligroso)',
-    'propane tanks': 'no reciclable (peligroso)',
-    'syringes': 'no reciclable (peligroso)',
-    'razor blades': 'no reciclable (peligroso)',
-    'diapers': 'no reciclable (sanitario)',
-    'feminine hygiene products': 'no reciclable (sanitario)',
-    'pet waste': 'orgánico (solo si es compostable)',
-    'kitty litter': 'no reciclable',
-    'animal carcasses': 'orgánico',
-    'asbestos': 'no reciclable (peligroso)',
-    'medical waste': 'no reciclable (peligroso)',
-    'clothing (worn beyond repair)': 'no reciclable (textil)',
-    'shoes (worn beyond repair)': 'no reciclable (mixto)',
-    'furniture (broken)': 'no reciclable (voluminoso)',
-    'mattress': 'no reciclable (voluminoso)',
-    'carpet': 'no reciclable (voluminoso)',
-    'tires': 'no reciclable (especial)',
-    'construction debris': 'no reciclable (construcción)',
-    'bricks': 'no reciclable (construcción)',
-    'concrete': 'no reciclable (construcción)',
-    'dirt and rocks': 'no reciclable (inerte)',
-    'ceramics': 'no reciclable',
-    'porcelain': 'no reciclable',
-    'mirrors': 'no reciclable',
-    'window glass': 'no reciclable',
-    'light bulbs (incandescent)': 'no reciclable',
-    'christmas lights': 'no reciclable (RAEE)',
-    'broken ceramics': 'no reciclable',
-    'crystal': 'no reciclable (vidrio especial)',
-    'pyrex': 'no reciclable (vidrio especial)',
-    'ovenware': 'no reciclable (vidrio especial)',
-    'drinking glasses': 'no reciclable (vidrio de baja calidad)',
-    'plastic bags (grocery)': 'no reciclable (peligroso para maquinaria)',
-    'plastic film': 'no reciclable',
-    'plastic wrappers': 'no reciclable',
-    'plastic straws': 'no reciclable',
-    'plastic cutlery': 'no reciclable',
-    'styrofoam': 'no reciclable',
-    'yogurt cups (dirty)': 'no reciclable (plástico sucio)',
-    'plastic plant pots (dirty)': 'no reciclable (plástico sucio)',
-    'plastic toys (mixed materials)': 'no reciclable',
-    'garden hoses': 'no reciclable (goma/plástico)',
-    'rubber gloves': 'no reciclable (goma)',
-    'balloons': 'no reciclable (látex/foil)',
-    'pool liners': 'no reciclable (plástico/vinilo)',
-    'shower curtains': 'no reciclable (plástico/tela)',
-    'blinds': 'no reciclable (plástico/metal/tela)',
-    'wallpaper': 'no reciclable (papel/plástico)',
-    'photographs': 'no reciclable (químicos)',
-    'carbon paper': 'no reciclable',
-    'shredded paper (very fine)': 'no reciclable (difícil de procesar)',
-    'tissue paper (used)': 'orgánico (si es biodegradable)',
-    'paper plates (dirty)': 'orgánico (si no tienen recubrimiento plástico)',
-    'paper cups (dirty)': 'orgánico (si no tienen recubrimiento plástico)',
-    'greasy pizza boxes': 'orgánico',
-    'waxed cardboard': 'no reciclable',
-    'milk cartons (dirty)': 'no reciclable (remanentes)',
-    'juice boxes (dirty)': 'no reciclable (remanentes)',
-    'pet food bags': 'no reciclable (plástico laminado)',
-    'frozen food boxes': 'no reciclable (plástico/papel recubierto)',
-    'foil-lined containers': 'no reciclable (mixto)',
-    'coffee pods': 'no reciclable (plástico/aluminio/orgánico)',
-    'k-cups': 'no reciclable (plástico/aluminio/orgánico)',
-    'tea bags with staples': 'no reciclable',
-    'plastic netting (from produce)': 'no reciclable',
-    'plastic strapping': 'no reciclable',
-    'nylon rope': 'no reciclable',
-    'fishing line': 'no reciclable',
-    'bubble wrap': 'no reciclable',
-    'foam packaging': 'no reciclable',
-    'epoxy resin': 'no reciclable (químicos)',
-    'fiberglass': 'no reciclable',
-    'carbon fiber': 'no reciclable',
-    'asphalt shingles': 'no reciclable (construcción)',
-    'drywall': 'no reciclable (construcción)',
-    'insulation (fiberglass)': 'no reciclable (construcción)',
-    'linoleum': 'no reciclable (plástico)',
-    'vinyl flooring': 'no reciclable (plástico)',
-    'ceramic tiles': 'no reciclable (construcción)',
-    'roofing felt': 'no reciclable (construcción)',
-    'caulking tubes': 'no reciclable (plástico/sellador)',
-    'silicone tubes': 'no reciclable (silicona)',
-    'paint cans (empty, dry)': 'reciclable (metal, si no hay residuos)',
-    'glue containers (empty)': 'reciclable (plástico, si está limpio)',
-    'pencils (no eraser/metal)': 'orgánico',
-    'wine corks (natural)': 'orgánico',
-    'plant clippings': 'orgánico',
-    'dried flowers': 'orgánico',
-    'potpourri': 'orgánico',
-    'pinecones': 'orgánico',
-    'nutshells': 'orgánico',
-    'fireplace ash (wood)': 'orgánico',
-    'animal hair': 'orgánico',
-    'human hair': 'orgánico',
-    'feathers': 'orgánico',
-    'nail clippings': 'orgánico',
-    'cotton balls (natural, clean)': 'orgánico',
-    'used tissues (no bodily fluids)': 'orgánico',
-    'shredded paper (clean)': 'reciclable (papel)',
-    'receipts (thermal paper)': 'no reciclable',
-    'sticky notes': 'no reciclable (adhesivo)',
-    'envelopes with windows': 'no reciclable (plástico)',
-    'padded envelopes': 'no reciclable (mixto)',
-    'gift wrap (metallic/glitter)': 'no reciclable',
-    'foil balloons': 'no reciclable',
-    'confetti': 'no reciclable',
-    'ribbon': 'no reciclable (tela/plástico)',
-    'bows': 'no reciclable (tela/plástico)',
-    'glitter': 'no reciclable',
-    'sequins': 'no reciclable',
-    'plastic hangers': 'no reciclable',
-    'wire hangers': 'reciclable (metal, en chatarrería)',
-    'broken pottery': 'no reciclable',
-    'broken ceramics': 'no reciclable',
-    'mirrors': 'no reciclable',
-    'car windows': 'no reciclable',
-    'lightbulbs (LED/CFL)': 'no reciclable (RAEE, manejo especial)',
-    'disposable cameras': 'no reciclable (RAEE)',
-    'old CDs/DVDs': 'no reciclable (policarbonato)',
-    'cassette tapes': 'no reciclable (plástico/cinta)',
-    'video tapes': 'no reciclable (plástico/cinta)',
-    'floppy disks': 'no reciclable (plástico/magnético)',
-    'old cell phone chargers': 'no reciclable (RAEE)',
-    'usb drives': 'no reciclable (RAEE)',
-    'memory cards': 'no reciclable (RAEE)',
-    'calculators': 'no reciclable (RAEE)',
-    'watches (digital/analog)': 'no reciclable (RAEE) / reciclable (metal)',
-    'jewelry (costume)': 'no reciclable (mixto)',
-    'appliances (small)': 'no reciclable (RAEE)',
-    'toasters': 'no reciclable (RAEE)',
-    'blenders': 'no reciclable (RAEE)',
-    'coffee makers': 'no reciclable (RAEE)',
-    'electric kettles': 'no reciclable (RAEE)',
-    'hair dryers': 'no reciclable (RAEE)',
-    'electric toothbrushes': 'no reciclable (RAEE)',
-    'shavers': 'no reciclable (RAEE)',
-    'electric razors': 'no reciclable (RAEE)',
-    'digital cameras': 'no reciclable (RAEE)',
-    'webcams': 'no reciclable (RAEE)',
-    'printers': 'no reciclable (RAEE)',
-    'scanners': 'no reciclable (RAEE)',
-    'routers': 'no reciclable (RAEE)',
-    'modems': 'no reciclable (RAEE)',
-    'cordless phones': 'no reciclable (RAEE)',
-    'radios': 'no reciclable (RAEE)',
-    'speakers': 'no reciclable (RAEE)',
-    'headphones': 'no reciclable (RAEE)',
-    'earbuds': 'no reciclable (RAEE)',
-    'remote controls': 'no reciclable (RAEE)',
-    'power tools': 'no reciclable (RAEE)',
-    'drills': 'no reciclable (RAEE)',
-    'saws (electric)': 'no reciclable (RAEE)',
-    'sanders': 'no reciclable (RAEE)',
-    'grinders': 'no reciclable (RAEE)',
-    'leaf blowers (electric)': 'no reciclable (RAEE)',
-    'weed whackers (electric)': 'no reciclable (RAEE)',
-    'lawn mowers (electric)': 'no reciclable (RAEE)',
-    'snow blowers (electric)': 'no reciclable (RAEE)',
-    'pressure washers (electric)': 'no reciclable (RAEE)',
-    'air conditioners (portable)': 'no reciclable (RAEE)',
-    'dehumidifiers': 'no reciclable (RAEE)',
-    'humidifiers': 'no reciclable (RAEE)',
-    'fans (electric)': 'no reciclable (RAEE)',
-    'heaters (electric)': 'no reciclable (RAEE)',
-    'vacuum cleaners': 'no reciclable (RAEE)',
-    'sewing machines (electric)': 'no reciclable (RAEE)',
-    'exercise equipment (electronic)': 'no reciclable (RAEE)',
-    'scooters (electric)': 'no reciclable (RAEE)',
-    'hoverboards': 'no reciclable (RAEE)',
-    'electric bikes (parts)': 'no reciclable (RAEE)',
-    'electric skateboards': 'no reciclable (RAEE)',
-    'drones': 'no reciclable (RAEE)',
-    'robot toys': 'no reciclable (RAEE)',
-    'solar powered garden lights': 'no reciclable (RAEE)',
-    'car batteries': 'no reciclable (peligroso)',
-    'motorcycle helmets': 'no reciclable (mixto)',
-    'bike tires': 'no reciclable (goma)',
-    'car tires': 'no reciclable (goma)',
-    'oil filters': 'no reciclable (peligroso)',
-    'brake fluid': 'no reciclable (peligroso)',
-    'antifreeze (liquid)': 'no reciclable (peligroso)',
-    'gasoline': 'no reciclable (peligroso)',
-    'diesel': 'no reciclable (peligroso)',
-    'paint thinner': 'no reciclable (peligroso)',
-    'varnish': 'no reciclable (peligroso)',
-    'stains': 'no reciclable (peligroso)',
-    'adhesives (liquid)': 'no reciclable (peligroso)',
-    'sealants': 'no reciclable (peligroso)',
-    'caulking': 'no reciclable (peligroso)',
-    'epoxy': 'no reciclable (peligroso)',
-    'resins': 'no reciclable (peligroso)',
-    'fiberglass resin': 'no reciclable (peligroso)',
-    'solvents': 'no reciclable (peligroso)',
-    'cleaners (household)': 'no reciclable (peligroso)',
-    'bleach': 'no reciclable (peligroso)',
-    'ammonia': 'no reciclable (peligroso)',
-    'drain cleaner': 'no reciclable (peligroso)',
-    'oven cleaner': 'no reciclable (peligroso)',
-    'toilet bowl cleaner': 'no reciclable (peligroso)',
-    'pesticides (liquid)': 'no reciclable (peligroso)',
-    'herbicides (liquid)': 'no reciclable (peligroso)',
-    'fertilizers (liquid)': 'no reciclable (peligroso)',
-    'pool chemicals': 'no reciclable (peligroso)',
-    'pharmaceuticals': 'no reciclable (peligroso)',
-    'sharps': 'no reciclable (peligroso)',
-    'medical waste': 'no reciclable (peligroso)',
-    'fire extinguishers': 'no reciclable (peligroso)',
-    'smoke detectors': 'no reciclable (peligroso)',
-    'carbon monoxide detectors': 'no reciclable (peligroso)',
-    'radon test kits': 'no reciclable (peligroso)',
-    'mercury thermostats': 'no reciclable (peligroso)',
-    'road flare': 'no reciclable (peligroso)',
-    'ammunition': 'no reciclable (peligroso)',
-    'fireworks': 'no reciclable (peligroso)',
-    'flares': 'no reciclable (peligroso)',
-    'explosives': 'no reciclable (peligroso)',
-    'radioactive waste': 'no reciclable (peligroso)',
-    'biohazard waste': 'no reciclable (peligroso)',
-    'chemical waste': 'no reciclable (peligroso)',
-    'hazardous waste': 'no reciclable (peligroso)',
-    'asbestos': 'no reciclable (peligroso)',
-    'lead paint chips': 'no reciclable (peligroso)',
-    'contaminated soil': 'no reciclable (peligroso)',
-    'animal waste (large quantities)': 'no reciclable (especial)',
-    'dead animals (large)': 'orgánico (manejo especial)',
-    'furniture (large pieces)': 'no reciclable (voluminoso)',
-    'mattresses': 'no reciclable (voluminoso)',
-    'box springs': 'no reciclable (voluminoso)',
-    'refrigerators (large)': 'no reciclable (RAEE, voluminoso)',
-    'freezers (large)': 'no reciclable (RAEE, voluminoso)',
-    'washing machines': 'no reciclable (RAEE, voluminoso)',
-    'dryers': 'no reciclable (RAEE, voluminoso)',
-    'dishwashers': 'no reciclable (RAEE, voluminoso)',
-    'stoves': 'no reciclable (RAEE, voluminoso)',
-    'ovens': 'no reciclable (RAEE, voluminoso)',
-    'water heaters': 'no reciclable (voluminoso)',
-    'furnaces': 'no reciclable (voluminoso)',
-    'air conditioners (window)': 'no reciclable (RAEE)',
-    'televisions (old CRT)': 'no reciclable (RAEE)',
-    'computer monitors (CRT)': 'no reciclable (RAEE)',
-    'tires (car/truck)': 'no reciclable (especial)',
-    'tree stumps': 'orgánico (manejo especial)',
-    'large branches': 'orgánico (manejo especial)',
-    'tree trunks': 'orgánico (manejo especial)',
-    'construction and demolition debris': 'no reciclable (construcción)',
-    'drywall': 'no reciclable (construcción)',
-    'plywood': 'reciclable (madera limpia) / no reciclable (tratado)',
-    'lumber (treated)': 'no reciclable',
-    'shingles': 'no reciclable (construcción)',
-    'insulation': 'no reciclable (construcción)',
-    'concrete (large pieces)': 'no reciclable (construcción)',
-    'bricks': 'no reciclable (construcción)',
-    'asphalt': 'no reciclable (construcción)',
-    'pipes (PVC)': 'reciclable (plástico)',
-    'pipes (metal)': 'reciclable (metal)',
-    'electrical wiring (scrap)': 'reciclable (metal)',
-    'rebar': 'reciclable (metal)',
-    'metal siding': 'reciclable (metal)',
-    'aluminum cans': 'reciclable (metal)',
-    'steel cans': 'reciclable (metal)',
-    'tin cans': 'reciclable (metal)',
-    'copper wire': 'reciclable (metal)',
-    'brass': 'reciclable (metal)',
-    'lead': 'reciclable (metal)',
-    'zinc': 'reciclable (metal)',
-    'stainless steel': 'reciclable (metal)',
-    'cast iron': 'reciclable (metal)',
-    'aluminum foil (clean)': 'reciclable (metal)',
-    'aluminum trays (clean)': 'reciclable (metal)',
-    'aerosol cans (empty)': 'reciclable (metal)',
-    'metal hangers': 'reciclable (metal, en chatarrería)',
-    'metal chairs': 'reciclable (metal)',
-    'metal tables': 'reciclable (metal)',
-    'metal shelves': 'reciclable (metal)',
-    'metal cabinets': 'reciclable (metal)',
-    'metal pipes': 'reciclable (metal)',
-    'metal roofing': 'reciclable (metal)',
-    'car parts (metal)': 'reciclable (metal)',
-    'bicycle parts (metal)': 'reciclable (metal)',
-    'appliances (metal parts)': 'reciclable (metal)',
-    'hardware (screws, nails, bolts)': 'reciclable (metal)',
-    'keys': 'reciclable (metal)',
-    'coins': 'reciclable (metal)',
-    'jewelry (precious metal)': 'reciclable (metal)',
-    'silverware (metal)': 'reciclable (metal)',
-    'pots and pans (metal)': 'reciclable (metal)',
-    'utensils (metal)': 'reciclable (metal)',
-    'tools (metal)': 'reciclable (metal)',
-    'weights (metal)': 'reciclable (metal)',
-    'dumbbells': 'reciclable (metal)',
-    'barbells': 'reciclable (metal)',
-    'metal outdoor furniture': 'reciclable (metal)',
-    'fire hydrants': 'reciclable (metal)',
-    'manhole covers': 'reciclable (metal)',
-    'fencing (metal)': 'reciclable (metal)',
-    'railroad ties (metal)': 'reciclable (metal)',
-    'old machinery (metal)': 'reciclable (metal)',
-    'industrial scrap metal': 'reciclable (metal)',
-    'soda bottles (plastic)': 'reciclable (plástico)',
-    'water bottles (plastic)': 'reciclable (plástico)',
-    'milk jugs (plastic)': 'reciclable (plástico)',
-    'detergent bottles (plastic)': 'reciclable (plástico)',
-    'shampoo bottles (plastic)': 'reciclable (plástico)',
-    'plastic food containers (clean)': 'reciclable (plástico)',
-    'yogurt cups (clean)': 'reciclable (plástico)',
-    'butter tubs (clean)': 'reciclable (plástico)',
-    'plastic jars (peanut butter, etc.)': 'reciclable (plástico)',
-    'plastic caps (from bottles/jars)': 'reciclable (plástico)',
-    'plastic flower pots (clean)': 'reciclable (plástico)',
-    'plastic laundry baskets': 'reciclable (plástico)',
-    'plastic bins': 'reciclable (plástico)',
-    'plastic toys (simple, clean)': 'reciclable (plástico)',
-    'plastic buckets': 'reciclable (plástico)',
-    'plastic hangers (some types)': 'reciclable (plástico)',
-    'plastic chairs': 'reciclable (plástico)',
-    'plastic tables': 'reciclable (plástico)',
-    'plastic storage containers': 'reciclable (plástico)',
-    'plastic crates': 'reciclable (plástico)',
-    'plastic pipes (PVC)': 'reciclable (plástico)',
-    'plastic bags (specific drop-off)': 'reciclable (plástico, en centros de acopio)',
-    'plastic film (specific drop-off)': 'reciclable (plástico, en centros de acopio)',
-    'plastic wrappers (clean, certain types)': 'reciclable (plástico, si es PET o HDPE)',
-    'blister packs (plastic only)': 'reciclable (plástico)',
-    'straws (plastic, if clean and accepted)': 'reciclable (plástico, algunos programas)',
-    'plastic cutlery (clean, if accepted)': 'reciclable (plástico, algunos programas)',
-    'glass bottles (clear, brown, green)': 'reciclable (vidrio)',
-    'glass jars (food, beverage)': 'reciclable (vidrio)',
-    'wine bottles': 'reciclable (vidrio)',
-    'beer bottles': 'reciclable (vidrio)',
-    'soda bottles (glass)': 'reciclable (vidrio)',
-    'perfume bottles (glass)': 'reciclable (vidrio)',
-    'cosmetic jars (glass)': 'reciclable (vidrio)',
-    'vases (glass)': 'reciclable (vidrio)',
-    'glass food storage containers': 'reciclable (vidrio)',
-    'paper (mixed, clean)': 'reciclable (papel)',
-    'newspapers': 'reciclable (papel)',
-    'magazines': 'reciclable (papel)',
-    'junk mail': 'reciclable (papel)',
-    'phone books': 'reciclable (papel)',
-    'catalogs': 'reciclable (papel)',
-    'office paper': 'reciclable (papel)',
-    'envelopes (without windows)': 'reciclable (papel)',
-    'paper bags (clean)': 'reciclable (papel)',
-    'cereal boxes (clean)': 'reciclable (cartón)',
-    'shoe boxes (clean)': 'reciclable (cartón)',
-    'cardboard boxes (corrugated, clean)': 'reciclable (cartón)',
-    'paper towel rolls': 'reciclable (cartón)',
-    'toilet paper rolls': 'reciclable (cartón)',
-    'egg cartons (paper)': 'reciclable (papel)',
-    'paperboard (from food packaging, clean)': 'reciclable (papel)',
-    'wrapping paper (non-metallic, no glitter)': 'reciclable (papel)',
-    'greeting cards (non-metallic, no glitter)': 'reciclable (papel)',
-    'books (paperback)': 'reciclable (papel)',
-    'notebooks (paper)': 'reciclable (papel)',
-    'brochures': 'reciclable (papel)',
-    'flyers': 'reciclable (papel)',
-    'postcards': 'reciclable (papel)',
-    'receipts (non-thermal)': 'reciclable (papel)',
-    'shredded paper (in paper bag)': 'reciclable (papel)',
-    'paper tubes (from posters, etc.)': 'reciclable (cartón)',
-    'juice cartons (gable top, clean)': 'reciclable (cartón de bebidas)',
-    'milk cartons (gable top, clean)': 'reciclable (cartón de bebidas)',
-    'soup cartons (aseptic, clean)': 'reciclable (cartón de bebidas)',
-    'broth cartons (aseptic, clean)': 'reciclable (cartón de bebidas)',
-    'wine cartons (aseptic, clean)': 'reciclable (cartón de bebidas)',
-    'plant-based milk cartons (clean)': 'reciclable (cartón de bebidas)',
-    'yogurt cartons (gable top, clean)': 'reciclable (cartón de bebidas)',
-    'ice cream containers (paperboard, clean)': 'reciclable (papelboard)',
-    'frozen food boxes (paperboard, clean)': 'reciclable (papelboard)',
-    'take-out containers (paperboard, clean)': 'reciclable (papelboard)',
-    'coffee grounds': 'orgánico',
-    'tea bags': 'orgánico',
-    'fruit and vegetable scraps': 'orgánico',
-    'egg shells': 'orgánico',
-    'bread and pasta (stale/spoiled)': 'orgánico',
-    'meat scraps (cooked/uncooked)': 'orgánico',
-    'bones (small)': 'orgánico',
-    'dairy products (spoiled)': 'orgánico',
-    'coffee filters': 'orgánico',
-    'paper napkins (used, no chemicals)': 'orgánico',
-    'paper towels (used, no chemicals)': 'orgánico',
-    'paper plates (used, no wax/plastic coating)': 'orgánico',
-    'leaves': 'orgánico',
-    'grass clippings': 'orgánico',
-    'small branches/twigs': 'orgánico',
-    'garden plant trimmings': 'orgánico',
-    'flowers (wilted)': 'orgánico',
-    'potting soil (used)': 'orgánico',
-    'sawdust (untreated wood)': 'orgánico',
-    'wood chips (untreated wood)': 'orgánico',
-    'fireplace ash (wood ash only)': 'orgánico',
-    'hair (human/animal)': 'orgánico',
-    'feathers': 'orgánico',
-    'cotton balls (100% cotton, clean)': 'orgánico',
-    'wool dryer lint': 'orgánico',
-    'corks (natural)': 'orgánico',
-    'nut shells': 'orgánico',
-    'seeds': 'orgánico'
-  };
+    <script>
+        // Teachable Machine Model URL
+        const URL = "https://teachablemachine.withgoogle.com/models/uaIV16QTw/";
+        let model, webcam, maxPredictions;
 
-  async function loadModel() {
-    if (!model) {
-      loader.style.display = 'block';
-      model = await cocoSsd.load();
-      loader.style.display = 'none';
-      console.log('✅ Modelo COCO-SSD cargado.');
-    }
-  }
+        // DOM Elements
+        const video = document.getElementById('webcam');
+        const canvas = document.createElement('canvas'); // Create a hidden canvas for internal use
+        const ctx = canvas.getContext('2d');
+        const startCameraButton = document.getElementById('startCameraButton');
+        const stopCameraButton = document.getElementById('stopCameraButton');
+        const uploadInput = document.getElementById('uploadInput');
+        const uploadButton = document.getElementById('uploadButton');
+        const outputImage = document.getElementById('outputImage');
+        const processImageButton = document.getElementById('processImageButton');
+        const clearImageButton = document.getElementById('clearImageButton');
+        const predictionLabel = document.getElementById('predictionLabel');
+        const themeToggle = document.getElementById('themeToggle');
+        const mainContent = document.getElementById('main-content');
 
-  // Load model when the page loads
-  window.onload = loadModel;
+        // State variables
+        let animationFrameId;
+        let isWebcamActive = false;
+        const confidenceThreshold = 0.80; // 80% de probabilidad de similitud
+        let lastPredictionClass = ''; // To track if the prediction changed
+        const predictionDisplayDuration = 2000; // Display prediction for 2 seconds
+        let predictionHideTimeout;
 
-  async function startCamera() {
-    try {
-      stopCamera(); // Detener cualquier stream de cámara existente
-
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      let constraints = { video: true };
-
-      if (isMobile) {
-        constraints = {
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            aspectRatio: { ideal: 1.7777777778 } // 16:9
-          }
+        // Stats data (to keep track of the actual values)
+        const statsData = {
+            'stat1': { value: 0, target: 1500, text: '' }, // Objetos Clasificados
+            'stat2': { value: 0, target: 5000, text: '' }, // Reducción de CO2 (kg)
+            'stat3': { value: 0, target: 80, text: '%' } // Porcentaje Reciclado
         };
-      }
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      video.srcObject = stream;
-      video.style.display = 'block';
-      canvas.style.display = 'block'; // Asegura que el canvas también esté visible para dibujar
-      ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpia cualquier dibujo anterior
-      categoryLabel.style.display = 'none'; // Ocultar etiqueta de categoría para cámara
-
-      stopCameraButton.style.display = 'inline-flex'; // Mostrar botón de detener
-
-      video.addEventListener('loadeddata', () => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        detectFrame(); // Iniciar la detección en tiempo real
-        console.log('Camera started, real-time detection active.');
-      }, { once: true }); // Usar { once: true } para que el evento se dispare una sola vez
-      // Esto evita múltiples llamadas a detectFrame si el video se carga varias veces
-      // y resuelve el problema del bucle infinito.
-
-    } catch (error) {
-      alert('Error al acceder a la cámara: ' + error.message);
-      console.error(error);
-    }
-  }
-
-  // Función para detección en tiempo real (para la cámara)
-  async function detectFrame() {
-    if (model && video.srcObject) { // Solo si el modelo está cargado y la cámara está activa
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const predictions = await model.detect(video);
-
-      let mainCategory = 'No clasificado'; // Categoría principal a mostrar en la etiqueta
-
-      predictions.forEach(pred => {
-        const category = recyclingCategories[pred.class.toLowerCase()]; // Convertir a minúsculas
-        if (pred.score > 0.6 && category && category !== 'no es un residuo') { // Solo si la confianza es alta y es un residuo
-          // Dibujar el cuadro delimitador
-          ctx.strokeStyle = 'lime';
-          ctx.lineWidth = 4; // Borde más grueso para mayor visibilidad
-          ctx.strokeRect(pred.bbox[0], pred.bbox[1], pred.bbox[2], pred.bbox[3]);
-
-          // Fondo para el texto de la clase
-          const classText = `${pred.class} (${(pred.score * 100).toFixed(1)}%)`;
-          const classTextWidth = ctx.measureText(classText).width;
-          const classTextHeight = 24;
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-          ctx.fillRect(pred.bbox[0], pred.bbox[1] - classTextHeight - 5, classTextWidth + 10, classTextHeight);
-
-          // Texto de la clase detectada
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = 'bold 20px Arial';
-          ctx.fillText(classText, pred.bbox[0] + 5, pred.bbox[1] - 10);
-
-          // Determinar la categoría principal para la etiqueta general
-          if (category.includes('reciclable')) {
-            mainCategory = 'RECICLABLE';
-            categoryLabel.style.backgroundColor = 'rgba(52, 199, 89, 0.8)'; // Verde
-          } else if (category.includes('orgánico')) {
-            mainCategory = 'ORGÁNICO';
-            categoryLabel.style.backgroundColor = 'rgba(153, 102, 51, 0.8)'; // Marrón
-          } else if (category.includes('no reciclable')) {
-            mainCategory = 'NO RECICLABLE';
-            categoryLabel.style.backgroundColor = 'rgba(255, 69, 58, 0.8)'; // Rojo
-          }
+        // SIDE NAV FUNCTIONS
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "280px"; // Adjust width for mobile
         }
-      });
 
-      // Mostrar la etiqueta de categoría principal
-      if (mainCategory !== 'No clasificado') {
-        categoryLabel.textContent = mainCategory;
-        categoryLabel.style.display = 'block';
-      } else {
-        categoryLabel.style.display = 'none'; // Ocultar si no hay detección relevante
-      }
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0";
+        }
 
-      animationFrameId = requestAnimationFrame(detectFrame); // Continuar el bucle
-    } else {
-      // Si la cámara se detuvo, asegurar que la etiqueta de categoría esté oculta
-      categoryLabel.style.display = 'none';
-    }
-  }
+        // SECTION MANAGEMENT
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('#main-content .section-card, #main-content .info-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none'; // Hide all sections
+            });
 
-  // Función para la subida de imágenes
-  async function uploadImage() {
-    const fileInput = document.getElementById('upload');
-    const file = fileInput.files[0];
-    if (file) {
-      if (!model) {
-        alert('Modelo no cargado. Por favor, espere a que el modelo cargue y intente de nuevo.');
-        return;
-      }
-      stopCamera(); // Detener la cámara si está activa
+            const activeSection = document.getElementById(sectionId);
+            if (activeSection) {
+                activeSection.classList.add('active');
+                activeSection.style.display = 'flex'; // Show the active section (flex for layout)
 
-      loader.style.display = 'block';
-      categoryLabel.style.display = 'none'; // Ocultar la etiqueta de categoría de cámara
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const img = new Image();
-        img.onload = async function () {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          video.style.display = 'none';
-          canvas.style.display = 'block';
-          stopCameraButton.style.display = 'none';
-
-          const predictions = await model.detect(canvas);
-          loader.style.display = 'none';
-
-          // Procesa las predicciones para la imagen subida
-          let detectedItems = [];
-          let mainCategoryForUpload = 'No clasificado';
-
-          predictions.forEach(pred => {
-            const category = recyclingCategories[pred.class.toLowerCase()];
-            if (pred.score > 0.6 && category && category !== 'no es un residuo') {
-                detectedItems.push({ class: pred.class, category: category });
-                // Aquí, para una imagen subida, puedes elegir la categoría del objeto más confiable
-                // o combinar las categorías de alguna manera si hay varios objetos.
-                // Por simplicidad, tomaremos la primera categoría significativa para la etiqueta principal.
-                if (mainCategoryForUpload === 'No clasificado') {
-                  if (category.includes('reciclable')) {
-                    mainCategoryForUpload = 'RECICLABLE';
-                  } else if (category.includes('orgánico')) {
-                    mainCategoryForUpload = 'ORGÁNICO';
-                  } else if (category.includes('no reciclable')) {
-                    mainCategoryForUpload = 'NO RECICLABLE';
-                  }
+                // Stop camera if navigating away from home
+                if (sectionId !== 'home-section' && isWebcamActive) {
+                    stopWebcam();
                 }
 
-                 // Dibuja el bounding box y el texto de la CLASE detectada sobre la imagen
-                ctx.strokeStyle = 'lime';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(pred.bbox[0], pred.bbox[1], pred.bbox[2], pred.bbox[3]);
-
-                const classText = `${pred.class} (${(pred.score * 100).toFixed(1)}%)`;
-                const classTextWidth = ctx.measureText(classText).width;
-                const classTextHeight = 24;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(pred.bbox[0], pred.bbox[1] - classTextHeight - 5, classTextWidth + 10, classTextHeight);
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 20px Arial';
-                ctx.fillText(classText, pred.bbox[0] + 5, pred.bbox[1] - 10);
+                // Initialize Google Map if the location section is active
+                if (sectionId === 'location-section') {
+                    initMap();
+                }
             }
-          });
+        }
 
-          if (detectedItems.length > 0) {
-            let resultMessage = 'Se detectaron los siguientes elementos:\n';
-            detectedItems.forEach(item => {
-              resultMessage += `- ${item.class}: ${item.category}\n`;
+        // GOOGLE MAPS INITIALIZATION (Requires API Key)
+        function initMap() {
+            // Replace with your desired coordinates for Guatemala City
+            const guatemalaCity = { lat: 14.6349, lng: -90.5069 };
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 12,
+                center: guatemalaCity,
             });
-            showModal(resultMessage); // Mostrar modal con todos los objetos detectados
+            new google.maps.Marker({
+                position: guatemalaCity,
+                map: map,
+                title: "Nuestra Ubicación de Ejemplo",
+            });
+        }
 
-            // Mostrar la etiqueta de categoría principal sobre la imagen
-            categoryLabel.textContent = mainCategoryForUpload;
-            if (mainCategoryForUpload.includes('RECICLABLE')) {
-              categoryLabel.style.backgroundColor = 'rgba(52, 199, 89, 0.8)';
-            } else if (mainCategoryForUpload.includes('ORGÁNICO')) {
-              categoryLabel.style.backgroundColor = 'rgba(153, 102, 51, 0.8)';
-            } else if (mainCategoryForUpload.includes('NO RECICLABLE')) {
-              categoryLabel.style.backgroundColor = 'rgba(255, 69, 58, 0.8)';
+        // Add Google Maps script dynamically (only if needed)
+        function loadGoogleMapsScript() {
+            // Check if script is already loaded
+            if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+                return;
             }
-            categoryLabel.style.display = 'block';
+            const script = document.createElement('script');
+            // Replace YOUR_API_KEY with your actual Google Maps API Key
+            script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
 
-            // Agregar solo a historial si es una imagen subida
-            addToHistory(detectedItems, mainCategoryForUpload);
 
-          } else {
-            showModal('No se detectaron elementos clasificables en la imagen.');
-            categoryLabel.textContent = 'NO CLASIFICADO';
-            categoryLabel.style.backgroundColor = 'rgba(128, 128, 128, 0.8)'; // Gris
-            categoryLabel.style.display = 'block';
-            addToHistory([], 'No clasificado'); // Registrar en historial aunque no se detecte nada
-          }
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    } else {
-      alert('No se seleccionó ninguna imagen.');
-    }
-  }
+        // TEACABLE MACHINE MODEL FUNCTIONS
+        async function initModel() {
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
 
-  function showModal(message) {
-    resultText.textContent = message;
-    resultModal.classList.add('show');
-  }
+            try {
+                // Load the model and metadata
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+                console.log('Teachable Machine model loaded successfully.');
+            } catch (error) {
+                console.error('Error loading Teachable Machine model:', error);
+                alert('Error al cargar el modelo de detección. Por favor, recarga la página o revisa la URL del modelo.');
+            }
+        }
 
-  function closeModal() {
-    resultModal.classList.remove('show');
-  }
+        async function loop() {
+            if (!isWebcamActive) return; // Stop loop if webcam is not active
 
-  function stopCamera() {
-    if (video.srcObject) {
-      const stream = video.srcObject;
-      stream.getTracks().forEach(track => track.stop());
-      video.srcObject = null;
-    }
-    cancelAnimationFrame(animationFrameId); // Detener el bucle de detección en tiempo real
-    video.style.display = 'none';
-    canvas.style.display = 'block'; // Mantener el canvas visible con la última imagen/dibujo
-    stopCameraButton.style.display = 'none';
-    categoryLabel.style.display = 'none'; // Ocultar la etiqueta de categoría
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas
-  }
+            // Draw current video frame to hidden canvas for prediction
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Use the hidden canvas for prediction
+            const prediction = await model.predict(canvas);
 
-  // Modificada para historial solo de subidas
-  function addToHistory(detectedItems, overallCategory) {
-    let historyEntry = '';
-    if (detectedItems.length > 0) {
-        historyEntry = `Análisis de imagen: ${overallCategory} (`;
-        detectedItems.forEach((item, index) => {
-            historyEntry += `${item.class}: ${item.category}`;
-            if (index < detectedItems.length - 1) {
-                historyEntry += ', ';
+            let detectedClass = 'No detectado';
+            let bestProbability = 0;
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const classPrediction = prediction[i].className;
+                const probability = parseFloat(prediction[i].probability.toFixed(2));
+
+                if (probability >= confidenceThreshold && probability > bestProbability) {
+                    bestProbability = probability;
+                    detectedClass = classPrediction;
+                }
+            }
+
+            // Only update the label and stats if the detected class is different
+            if (detectedClass !== lastPredictionClass) {
+                clearTimeout(predictionHideTimeout); // Clear any previous hide timeout
+                displayPrediction(detectedClass);
+                lastPredictionClass = detectedClass; // Update last detected class
+
+                // Schedule to hide/reset after a short duration if no new detection
+                predictionHideTimeout = setTimeout(() => {
+                    if (detectedClass === lastPredictionClass) { // Only hide if still the same prediction
+                         // predictionLabel.style.display = 'none'; // Keep it visible but potentially reset text
+                         displayPrediction('No detectado'); // Reset to 'No detectado'
+                         lastPredictionClass = 'No detectado';
+                    }
+                }, predictionDisplayDuration);
+            }
+
+            animationFrameId = window.requestAnimationFrame(loop);
+        }
+
+
+        async function predictImage(imageElement) {
+            if (!model) {
+                alert('El modelo aún no está cargado. Por favor, espera un momento.');
+                return;
+            }
+
+            // Create a temporary canvas to draw the image for prediction
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = imageElement.naturalWidth;
+            tempCanvas.height = imageElement.naturalHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(imageElement, 0, 0, tempCanvas.width, tempCanvas.height);
+
+            const prediction = await model.predict(tempCanvas);
+            let detectedClass = 'No detectado';
+            let bestProbability = 0;
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const classPrediction = prediction[i].className;
+                const probability = parseFloat(prediction[i].probability.toFixed(2));
+
+                if (probability >= confidenceThreshold && probability > bestProbability) {
+                    bestProbability = probability;
+                    detectedClass = classPrediction;
+                }
+            }
+
+            displayPrediction(detectedClass);
+            // For images, we don't clear the label automatically like webcam
+        }
+
+        function displayPrediction(className) {
+            predictionLabel.textContent = className.toUpperCase();
+            predictionLabel.className = ''; // Clear previous classes
+            predictionLabel.classList.add(className.toLowerCase().replace(/\s/g, '-')); // Add class for styling
+
+            // Update stats based on detected class only once per new valid detection
+            if (className.toLowerCase() === 'reciclable' && lastPredictionClass !== 'reciclable') {
+                incrementStat('stat1', 1); // Objetos Clasificados
+                incrementStat('stat3', 0.1); // Pequeño incremento para Porcentaje Reciclado
+            } else if (className.toLowerCase() === 'organico' && lastPredictionClass !== 'organico') {
+                incrementStat('stat2', 0.05); // Pequeño incremento para CO2
+            }
+            // Ensure the label is visible when a prediction is made
+            predictionLabel.style.display = 'block';
+        }
+
+        // WEBCAM CONTROLS
+        async function startWebcam() {
+            if (!model) {
+                alert('El modelo aún no está cargado. Por favor, espera un momento.');
+                return;
+            }
+            if (isWebcamActive) return; // Prevent multiple camera starts
+
+            try {
+                // Constraints for higher resolution and good illumination for mobile
+                // Prefer facingMode: environment (rear camera)
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1280 }, // Attempt for higher resolution
+                        height: { ideal: 720 },
+                        // Optional: frameRate: { ideal: 30, max: 30 }
+                    }
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                video.style.display = 'block';
+
+                // Adjust the hidden canvas size to match the video feed
+                video.addEventListener('loadedmetadata', () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                }, { once: true });
+
+
+                outputImage.style.display = 'none';
+                uploadInput.value = '';
+                processImageButton.style.display = 'none';
+                clearImageButton.style.display = 'none';
+                predictionLabel.style.display = 'none'; // Start hidden
+
+                startCameraButton.style.display = 'none';
+                stopCameraButton.style.display = 'inline-flex';
+                uploadButton.style.display = 'none';
+
+                isWebcamActive = true;
+                window.requestAnimationFrame(loop); // Start the prediction loop
+
+                console.log('Webcam started for Teachable Machine.');
+
+            } catch (error) {
+                alert('Error al acceder a la cámara: ' + error.message + '. Asegúrate de permitir el acceso a la cámara y que esté disponible.');
+                console.error(error);
+                stopWebcam();
+            }
+        }
+
+        function stopWebcam() {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            video.style.display = 'none';
+            predictionLabel.style.display = 'none';
+            clearTimeout(predictionHideTimeout); // Clear any pending hide timeout
+
+            startCameraButton.style.display = 'inline-flex';
+            stopCameraButton.style.display = 'none';
+            uploadButton.style.display = 'inline-flex'; // Show upload button again
+
+            isWebcamActive = false;
+            lastPredictionClass = ''; // Reset prediction state
+            console.log('Webcam stopped.');
+        }
+
+        // EVENT LISTENERS
+        startCameraButton.addEventListener('click', startWebcam);
+        stopCameraButton.addEventListener('click', stopWebcam);
+
+        uploadButton.addEventListener('click', () => {
+            stopWebcam(); // Stop webcam if trying to upload
+            uploadInput.click();
+        });
+
+        uploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    outputImage.src = e.target.result;
+                    outputImage.style.display = 'block';
+                    video.style.display = 'none';
+                    predictionLabel.style.display = 'none'; // Hide label for new image
+
+                    processImageButton.style.display = 'inline-flex';
+                    clearImageButton.style.display = 'inline-flex';
+                    startCameraButton.style.display = 'inline-flex';
+                    uploadButton.style.display = 'none'; // Hide upload button after image selected
+                };
+                reader.readAsDataURL(file);
             }
         });
-        historyEntry += `) - ${new Date().toLocaleString()}`;
-    } else {
-        historyEntry = `Análisis de imagen: No se detectó ningún objeto clasificable - ${new Date().toLocaleString()}`;
-    }
 
-    const listItem = document.createElement('li');
-    listItem.textContent = historyEntry;
-    historyList.prepend(listItem); // Añadir al principio de la lista
-  }
+        processImageButton.addEventListener('click', () => {
+            if (outputImage.src && outputImage.src !== '#') {
+                predictImage(outputImage);
+            } else {
+                alert('No hay imagen para procesar. Por favor, sube una.');
+            }
+        });
 
-  function clearHistory() {
-    historyList.innerHTML = '';
-  }
+        clearImageButton.addEventListener('click', () => {
+            outputImage.src = '#';
+            outputImage.style.display = 'none';
+            predictionLabel.style.display = 'none';
+            processImageButton.style.display = 'none';
+            clearImageButton.style.display = 'none';
+            uploadInput.value = '';
+            uploadButton.style.display = 'inline-flex';
+            // No need to clear canvas as it's internal for webcam now
+        });
 
-  function toggleMenu(forceClose = null) {
-    const navbar = document.getElementById('navbar');
-    if (forceClose === false || navbar.classList.contains('open')) {
-      navbar.classList.remove('open');
-    } else {
-      navbar.classList.add('open');
-    }
-  }
+        // THEME TOGGLE
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            themeToggle.innerHTML = isDarkMode ? '<span class="material-icons">light_mode</span>' : '<span class="material-icons">dark_mode</span>';
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        });
 
-  function scrollToSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    section.scrollIntoView({ behavior: 'smooth' });
-    toggleMenu(false);
-  }
+        // Load saved theme on startup
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<span class="material-icons">light_mode</span>';
+        } else {
+            themeToggle.innerHTML = '<span class="material-icons">dark_mode</span>';
+        }
 
-  function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    document.querySelector('.navbar').classList.toggle('dark-mode');
-    document.querySelectorAll('.section').forEach(section => section.classList.toggle('dark-mode'));
-    document.querySelector('.history').classList.toggle('dark-mode');
-    document.querySelector('.footer').classList.toggle('dark-mode');
-  }
+        // Initialize model on page load
+        initModel();
 
-  function submitForm(event) {
-    event.preventDefault();
-    const successMessage = document.getElementById('success-message');
-    successMessage.style.display = 'block';
-    setTimeout(() => {
-      successMessage.style.display = 'none';
-      document.querySelector('.contact-form').reset();
-    }, 3000);
-  }
+        // Animated Stats (initial animation only, no continuous updates)
+        function animateStatsInitial() {
+            for (const key in statsData) {
+                const stat = statsData[key];
+                const element = document.getElementById(key);
+                const increment = stat.target / 100; // 100 steps
+                let currentVal = 0;
 
-  // Partículas de reciclaje
-  const particleCanvas = document.getElementById('particles');
-  const particleCtx = particleCanvas.getContext('2d');
-  particleCanvas.width = window.innerWidth;
-  particleCanvas.height = window.innerHeight;
-  let particles = [];
-  function createParticle() {
-    return {
-      x: Math.random() * particleCanvas.width,
-      y: Math.random() * particleCanvas.height,
-      size: Math.random() * 10 + 5,
-      speedX: Math.random() * 0.6 - 0.3,
-      speedY: Math.random() * 0.6 - 0.3,
-      rotation: 0
-    };
-  }
-  for (let i = 0; i < 30; i++) particles.push(createParticle());
-  function animateParticles() {
-    particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-    particles.forEach(p => {
-      p.x += p.speedX;
-      p.y += p.speedY;
-      p.rotation += 0.05;
-      if (p.x < 0 || p.x > particleCanvas.width) p.speedX *= -1;
-      if (p.y < 0 || p.y > particleCanvas.height) p.speedY *= -1;
-      particleCtx.save();
-      particleCtx.translate(p.x, p.y);
-      particleCtx.rotate(p.rotation);
-      particleCtx.beginPath();
-      particleCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-      particleCtx.fillStyle = '#8fbc8f';
-      particleCtx.fill();
-      particleCtx.restore();
-    });
-    requestAnimationFrame(animateParticles);
-  }
-  animateParticles();
+                const interval = setInterval(() => {
+                    if (currentVal < stat.target) {
+                        currentVal += increment;
+                        if (currentVal > stat.target) currentVal = stat.target;
+                        element.textContent = Math.round(currentVal) + stat.text;
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 20); // 20ms per step
+            }
+        }
+        animateStatsInitial(); // Call on page load
 
-  // Estadísticas animadas
-  function animateStats() {
-    const stats = [
-      { id: 'stat1', target: 1500, current: 0 },
-      { id: 'stat2', target: 5000, current: 0 },
-      { id: 'stat3', target: 80, current: 0 }
-    ];
-    stats.forEach(stat => {
-      const element = document.getElementById(stat.id);
-      // Check if animation already started for this stat to avoid re-running
-      if (element.textContent === '0' || parseInt(element.textContent) < stat.target) {
-        const interval = setInterval(() => {
-          if (stat.current < stat.target) {
-            stat.current += Math.ceil(stat.target / 100);
-            element.textContent = stat.current;
-          } else {
-            element.textContent = stat.target;
-            clearInterval(interval);
-          }
-        }, 20);
-      }
-    });
-  }
-  let statsAnimated = false;
-  window.addEventListener('scroll', () => {
-    if (!statsAnimated && document.getElementById('about').getBoundingClientRect().top < window.innerHeight - 100) {
-      animateStats();
-      statsAnimated = true; // Set flag to true after animating once
-    }
-  });
+        // Function to increment a stat value permanently
+        function incrementStat(id, amount) {
+            const stat = statsData[id];
+            if (stat) {
+                stat.value += amount;
+                // Cap the value at the target if it goes over
+                if (stat.value > stat.target) {
+                    stat.value = stat.target;
+                }
+                document.getElementById(id).textContent = Math.round(stat.value) + stat.text;
+            }
+        }
 
-</script>
-</body>
+
+        // Initial section display
+        document.addEventListener('DOMContentLoaded', () => {
+            showSection('home-section');
+            // If you need the Google Maps API key, load it here.
+            // Be sure to replace "YOUR_API_KEY" in the script tag
+            // loadGoogleMapsScript();
+        });
+    </script>
+    </body>
 </html>
