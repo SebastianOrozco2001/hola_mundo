@@ -27,22 +27,26 @@
             transition: background-image 0.5s ease, color 0.5s ease;
             overflow-x: hidden;
             position: relative;
-            min-height: 100vh; /* Para que el footer se quede abajo */
+            min-height: 100vh;
+            /* Para que el footer se quede abajo */
             display: flex;
             flex-direction: column;
         }
 
         body.dark-mode {
-            background-image: url('reciclaje_blur_dark.jpg'); /* Asegúrate de tener estas imágenes */
+            background-image: url('reciclaje_blur_dark.jpg');
+            /* Asegúrate de tener estas imágenes */
             color: #e0e0e0;
         }
 
         /* MATERIAL UI INSPIRED STYLES */
         :root {
-            --primary-color: #4CAF50; /* Green */
+            --primary-color: #4CAF50;
+            /* Green */
             --primary-dark: #388E3C;
             --primary-light: #81C784;
-            --accent-color: #FFC107; /* Amber */
+            --accent-color: #FFC107;
+            /* Amber */
             --text-color: #333;
             --text-color-dark: #e0e0e0;
             --background-light: #f4f6f8;
@@ -179,7 +183,8 @@
 
         /* MAIN CONTENT LAYOUT */
         main {
-            flex-grow: 1; /* Permite que el contenido principal ocupe el espacio restante */
+            flex-grow: 1;
+            /* Permite que el contenido principal ocupe el espacio restante */
             max-width: 1200px;
             margin: 30px auto;
             padding: 20px;
@@ -195,8 +200,10 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0;
+            transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0);
+            }
         }
 
         .section-card {
@@ -241,14 +248,17 @@
             display: none;
             width: 100%;
             max-width: 640px; /* Standard webcam width */
-            height: auto; /* Maintain aspect ratio */
+            height: auto;
+            /* Maintain aspect ratio */
             border: 3px solid var(--primary-color);
             border-radius: 8px;
             margin-top: 15px;
             background-color: #000;
             transition: border-color 0.3s ease;
-            position: relative; /* For the overlay label */
-            overflow: hidden; /* Ensure label doesn't spill out */
+            position: relative;
+            /* For the overlay label */
+            overflow: hidden;
+            /* Ensure label doesn't spill out */
         }
         body.dark-mode #webcam {
             border: 3px solid var(--primary-light);
@@ -261,8 +271,10 @@
             max-width: 640px;
             margin-top: 15px;
             border-radius: 8px;
-            overflow: hidden; /* Ensures label stays within bounds */
-            border: 3px solid #ccc; /* Default border color */
+            overflow: hidden;
+            /* Ensures label stays within bounds */
+            border: 3px solid #ccc;
+            /* Default border color */
             transition: border-color 0.4s ease;
         }
 
@@ -279,22 +291,32 @@
             font-weight: bold;
             text-align: center;
             box-sizing: border-box; /* Asegura que el padding no afecte el width total */
-            display: none; /* Oculto por defecto */
-            z-index: 10; /* Asegura que esté por encima de la imagen/video */
+            display: none;
+            /* Oculto por defecto */
+            z-index: 10;
+            /* Asegura que esté por encima de la imagen/video */
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             border-bottom: 5px solid; /* Borde inferior que cambiará de color */
         }
         
         /* Colores de fondo y borde para la etiqueta y el contenedor */
-        .media-container.reciclable-border { border-color: #00FF00; } /* Verde brillante */
-        .media-container.organico-border { border-color: #A0522D; } /* Marrón */
-        .media-container.no-reciclable-border { border-color: #FF4500; } /* Rojo-anaranjado */
-        .media-container.no-detectado-border { border-color: #A9A9A9; } /* Gris más claro */
+        .media-container.reciclable-border { border-color: #00FF00;
+        } /* Verde brillante */
+        .media-container.organico-border { border-color: #A0522D;
+        } /* Marrón */
+        .media-container.no-reciclable-border { border-color: #FF4500;
+        } /* Rojo-anaranjado */
+        .media-container.no-detectado-border { border-color: #A9A9A9;
+        } /* Gris más claro */
 
-        #predictionOverlayLabel.reciclable-bg { background-color: rgba(0, 128, 0, 0.8); border-color: #00FF00; } /* Verde oscuro semitransparente */
-        #predictionOverlayLabel.organico-bg { background-color: rgba(139, 69, 19, 0.8); border-color: #A0522D; } /* Marrón semitransparente */
-        #predictionOverlayLabel.no-reciclable-bg { background-color: rgba(255, 0, 0, 0.8); border-color: #FF4500; } /* Rojo semitransparente */
-        #predictionOverlayLabel.no-detectado-bg { background-color: rgba(100, 100, 100, 0.8); border-color: #A9A9A9; } /* Gris semitransparente */
+        #predictionOverlayLabel.reciclable-bg { background-color: rgba(0, 128, 0, 0.8);
+        border-color: #00FF00; } /* Verde oscuro semitransparente */
+        #predictionOverlayLabel.organico-bg { background-color: rgba(139, 69, 19, 0.8);
+        border-color: #A0522D; } /* Marrón semitransparente */
+        #predictionOverlayLabel.no-reciclable-bg { background-color: rgba(255, 0, 0, 0.8);
+        border-color: #FF4500; } /* Rojo semitransparente */
+        #predictionOverlayLabel.no-detectado-bg { background-color: rgba(100, 100, 100, 0.8);
+        border-color: #A9A9A9; } /* Gris semitransparente */
 
 
         /* Buttons - Material Design Inspired */
@@ -355,7 +377,8 @@
 
         /* ABOUT / HOW TO USE / CONTACT SECTIONS - Initial state hidden */
         .info-section {
-            display: none; /* Hidden by default */
+            display: none;
+            /* Hidden by default */
             flex-direction: column;
             gap: 20px;
             padding: 20px;
@@ -363,7 +386,8 @@
         }
 
         .info-section.active {
-            display: flex; /* Show when active */
+            display: flex;
+            /* Show when active */
         }
 
         .info-card {
@@ -377,8 +401,10 @@
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-30px); }
-            to { opacity: 1; transform: translateX(0); }
+            from { opacity: 0;
+            transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0);
+            }
         }
 
         body.dark-mode .info-card {
@@ -423,18 +449,58 @@
             color: var(--primary-light);
         }
 
-        /* GOOGLE MAPS */
-        #map {
+        /* HOW TO USE - Specific styles for small images */
+        .how-to-use-images {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+        }
+
+        .how-to-use-images .image-item {
+            text-align: center;
+            width: 100px; /* Adjust size as needed */
+        }
+
+        .how-to-use-images .image-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .how-to-use-images .image-item img {
+            border: 2px solid var(--primary-light);
+        }
+
+        .how-to-use-images .image-item p {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+        body.dark-mode .how-to-use-images .image-item p {
+            color: var(--text-color-dark);
+        }
+
+
+        /* LOCATION IMAGE */
+        #locationImage {
             width: 100%;
-            height: 400px; /* Fixed height for the map */
+            max-width: 600px; /* Limit max width for larger screens */
+            height: auto;
             border-radius: 8px;
             border: 1px solid var(--border-color-light);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-top: 20px;
+            display: block; /* Ensure it behaves like a block element */
+            margin-left: auto; /* Center the image */
+            margin-right: auto; /* Center the image */
         }
-        body.dark-mode #map {
+        body.dark-mode #locationImage {
             border: 1px solid var(--border-color-dark);
         }
+
 
         /* STATS SECTION */
         .stats-section {
@@ -470,7 +536,8 @@
         }
 
         .stat-item h3 {
-            color: #007bff; /* Blue for titles */
+            color: #007bff;
+            /* Blue for titles */
             font-size: 1.6rem;
             margin-bottom: 12px;
             font-weight: 500;
@@ -526,12 +593,14 @@
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
         }
         .theme-toggle:hover {
-            background-color: #fbc02d; /* Darker amber */
+            background-color: #fbc02d;
+            /* Darker amber */
             transform: scale(1.08);
             box-shadow: 0 6px 12px rgba(0,0,0,0.4);
         }
         body.dark-mode .theme-toggle {
-            background-color: #9E9E9E; /* Grey for dark mode toggle */
+            background-color: #9E9E9E;
+            /* Grey for dark mode toggle */
             color: white;
         }
         body.dark-mode .theme-toggle:hover {
@@ -591,8 +660,10 @@
             }
             /* Adjustments for #predictionOverlayLabel on mobile */
             #predictionOverlayLabel {
-                font-size: 1.6rem; /* Smaller font on mobile */
-                padding: 10px; /* Reduced padding on mobile */
+                font-size: 1.6rem;
+                /* Smaller font on mobile */
+                padding: 10px;
+                /* Reduced padding on mobile */
             }
             .stats-section {
                 padding: 20px;
@@ -642,7 +713,8 @@
             <div class="media-container">
                 <video id="webcam" autoplay playsinline muted></video>
                 <img id="outputImage" src="#" alt="Imagen subida" style="display: none;">
-                <div id="predictionOverlayLabel"></div> </div>
+                <div id="predictionOverlayLabel"></div>
+            </div>
             <div class="controls">
                 <button id="startCameraButton"><span class="material-icons">videocam</span> Iniciar Cámara</button>
                 <button id="stopCameraButton" style="display: none;"><span class="material-icons">videocam_off</span> Detener Cámara</button>
@@ -695,6 +767,20 @@
                     <li><span class="material-icons">clear_all</span> Evita fondos muy cargados que puedan confundir al modelo.</li>
                     <li><span class="material-icons">compare</span> Clasifica un objeto a la vez para mayor precisión.</li>
                 </ul>
+                <div class="how-to-use-images">
+                    <div class="image-item">
+                        <img src="plastico.jpg" alt="Plástico">
+                        <p>Plástico</p>
+                    </div>
+                    <div class="image-item">
+                        <img src="papel.jpg" alt="Papel">
+                        <p>Papel</p>
+                    </div>
+                    <div class="image-item">
+                        <img src="organico.jpg" alt="Orgánico">
+                        <p>Orgánico</p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -725,8 +811,8 @@
             <h2>Nuestra Ubicación</h2>
             <div class="info-card">
                 <p>Puedes encontrarnos en el siguiente punto de referencia (ejemplo):</p>
-                <div id="map"></div>
-                <p style="margin-top: 15px;">**Nota:** Este es un ejemplo de ubicación. Para ver tu ubicación real, necesitarás una API Key de Google Maps y configurar un mapa interactivo.</p>
+                <img id="locationImage" src="ubicacion.jpg" alt="Ubicación de VisionAI">
+                <p style="margin-top: 15px;">Guatemala, Ciudad de Guatemala</p>
             </div>
         </section>
     </main>
@@ -747,7 +833,7 @@
     </section>
 
     <footer>
-        <p>© 2024 VisionAI. Todos los derechos reservados. Desarrollado con ❤️ y IA.</p>
+        <p>© 2025 VisionAI. Todos los derechos reservados. Desarrollado con ❤️ y IA.</p>
     </footer>
 
     <button id="themeToggle" class="theme-toggle">
@@ -760,7 +846,7 @@
         let model, webcam, maxPredictions;
 
         // DOM Elements
-        const webcamVideo = document.getElementById('webcam'); // Cambiado de 'video' a 'webcamVideo' para evitar confusiones
+        const webcamVideo = document.getElementById('webcam');
         const outputImage = document.getElementById('outputImage');
         const startCameraButton = document.getElementById('startCameraButton');
         const stopCameraButton = document.getElementById('stopCameraButton');
@@ -775,9 +861,9 @@
         // State variables
         let animationFrameId;
         let isWebcamActive = false;
-        const confidenceThreshold = 0.85; // 80% de probabilidad de similitud
+        const confidenceThreshold = 0.78; // 80% de probabilidad de similitud
         let lastPredictionCategory = ''; // Para rastrear si la predicción cambió
-        const predictionDisplayDuration = 6000; // Mostrar predicción por 6 segundos
+        const predictionDisplayDuration = 5000; // Mostrar predicción por 6 segundos
         let predictionHideTimeout;
 
         // Stats data (fixed values after initial animation)
@@ -790,10 +876,12 @@
         // SIDE NAV FUNCTIONS
         function openNav() {
             document.getElementById("mySidenav").style.width = "280px"; // Adjust width for mobile
+            document.getElementById("mySidenav").classList.add('open'); // Add 'open' class for mobile responsiveness
         }
 
         function closeNav() {
             document.getElementById("mySidenav").style.width = "0";
+            document.getElementById("mySidenav").classList.remove('open'); // Remove 'open' class
         }
 
         // SECTION MANAGEMENT
@@ -813,58 +901,16 @@
                 if (sectionId !== 'home-section' && isWebcamActive) {
                     stopWebcam();
                 }
-
-                // Initialize Google Map if the location section is active
-                if (sectionId === 'location-section') {
-                    // loadGoogleMapsScript(); // Descomenta si usas Google Maps API
-                    initMap(); // Función que inicializa el mapa (debes tenerla o cargarla)
-                }
             }
         }
-
-        // GOOGLE MAPS INITIALIZATION (Requires API Key - example)
-        function initMap() {
-             // Este es un ejemplo. Necesitas tu propia API Key de Google Maps
-            const guatemalaCity = { lat: 14.6349, lng: -90.5069 };
-            // Verifica si google.maps está definido antes de usarlo
-            if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-                const map = new google.maps.Map(document.getElementById("map"), {
-                    zoom: 12,
-                    center: guatemalaCity,
-                });
-                new google.maps.Marker({
-                    position: guatemalaCity,
-                    map: map,
-                    title: "Nuestra Ubicación de Ejemplo",
-                });
-            } else {
-                console.warn('Google Maps API no cargada. No se puede inicializar el mapa.');
-                document.getElementById("map").textContent = 'Para ver el mapa, carga la API de Google Maps con tu clave.';
-            }
-        }
-
-        // Add Google Maps script dynamically (only if needed) - example
-        // function loadGoogleMapsScript() {
-        //     if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-        //         return;
-        //     }
-        //     const script = document.createElement('script');
-        //     script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`; // Reemplaza YOUR_API_KEY
-        //     script.async = true;
-        //     script.defer = true;
-        //     document.head.appendChild(script);
-        // }
-
 
         // TEACABLE MACHINE MODEL FUNCTIONS
         async function initModel() {
             const modelURL = URL + "model.json";
             const metadataURL = URL + "metadata.json";
-
             console.log('DEBUG: Intentando cargar el modelo de Teachable Machine...');
             console.log('DEBUG: Model URL:', modelURL);
             console.log('DEBUG: Metadata URL:', metadataURL);
-
             try {
                 // Load the model and metadata
                 model = await tmImage.load(modelURL, metadataURL);
@@ -882,18 +928,14 @@
                 mediaContainer.classList.remove('reciclable-border', 'organico-border', 'no-reciclable-border', 'no-detectado-border');
                 return; // Stop loop if webcam is not active or model not loaded
             }
-
             const prediction = await model.predict(webcamVideo);
-
             let detectedCategory = 'no detectado'; // Default state
             let bestProbability = 0;
 
             for (let i = 0; i < maxPredictions; i++) {
                 const className = prediction[i].className;
                 const probability = parseFloat(prediction[i].probability.toFixed(2));
-
                 console.log(`DEBUG: Predicción: ${className}, Probabilidad: ${probability}`);
-
                 if (probability >= confidenceThreshold && probability > bestProbability) {
                     bestProbability = probability;
                     detectedCategory = className; // Usar el nombre de la clase de Teachable Machine directamente
@@ -909,15 +951,13 @@
                 // Programar para ocultar la predicción después de un tiempo si no hay una nueva detección
                 predictionHideTimeout = setTimeout(() => {
                     if (detectedCategory === lastPredictionCategory) { // Solo resetear si sigue siendo la misma predicción
-                         displayPrediction('no detectado'); // Resetear a 'No detectado'
-                         lastPredictionCategory = 'no detectado';
+                        displayPrediction('no detectado'); // Resetear a 'No detectado'
+                        lastPredictionCategory = 'no detectado';
                     }
                 }, predictionDisplayDuration);
             }
-
             animationFrameId = window.requestAnimationFrame(loop);
         }
-
 
         async function predictImage(imageElement) {
             console.log('DEBUG: Iniciando predictImage para la imagen subida.');
@@ -926,11 +966,9 @@
                 alert('El modelo aún no está cargado. Por favor, espera un momento e intenta de nuevo.');
                 return;
             }
-
             try {
                 const prediction = await model.predict(imageElement);
                 console.log('DEBUG: Predicciones del modelo:', prediction);
-
                 let detectedCategory = 'no detectado';
                 let bestProbability = 0;
 
@@ -938,7 +976,6 @@
                     const className = prediction[i].className;
                     const probability = parseFloat(prediction[i].probability.toFixed(2));
                     console.log(`DEBUG: Clase: ${className}, Probabilidad: ${probability}`);
-
                     if (probability >= confidenceThreshold && probability > bestProbability) {
                         bestProbability = probability;
                         detectedCategory = className;
@@ -946,7 +983,6 @@
                 }
                 console.log(`DEBUG: Mejor detección: ${detectedCategory} con probabilidad: ${bestProbability}`);
                 displayPrediction(detectedCategory); // Mostrar la predicción
-
             } catch (error) {
                 console.error('DEBUG: Error durante la predicción de la imagen:', error);
                 displayPrediction('Error al analizar');
@@ -957,12 +993,10 @@
             console.log('DEBUG: Llamando a displayPrediction con:', category);
             predictionOverlayLabel.textContent = category.toUpperCase();
             predictionOverlayLabel.className = ''; // Limpiar clases anteriores
-            mediaContainer.classList.remove('reciclable-border', 'organico-border', 'no-reciclable-border', 'no-detectado-border');
-
+            mediaContainer.classList.remove('reciclable-border', 'organico-border', 'no-reciclable-border', 'no-detectado-border'); // Limpiar clases de borde
 
             // Mapear categorías a clases de estilo y color de borde del contenedor
             let normalizedCategory = category.toLowerCase();
-
             if (normalizedCategory.includes('reciclable')) {
                 predictionOverlayLabel.classList.add('reciclable-bg');
                 mediaContainer.classList.add('reciclable-border');
@@ -973,154 +1007,123 @@
                 predictionOverlayLabel.classList.add('no-reciclable-bg');
                 mediaContainer.classList.add('no-reciclable-border');
             } else {
-                // Si es "No detectado" o cualquier otra clase inesperada del modelo
                 predictionOverlayLabel.classList.add('no-detectado-bg');
                 mediaContainer.classList.add('no-detectado-border');
-                predictionOverlayLabel.textContent = 'NO DETECTADO'; // Explícitamente setear texto
             }
-            
-            // Asegurar que la etiqueta y el contenedor sean visibles cuando se hace una predicción
-            predictionOverlayLabel.style.display = 'block';
-            console.log('DEBUG: predictionOverlayLabel actualizado y visible.');
+            predictionOverlayLabel.style.display = 'block'; // Mostrar la etiqueta
         }
 
-        // WEBCAM CONTROLS
-        async function startWebcam() {
-            if (!model) {
-                alert('El modelo aún no está cargado. Por favor, espera un momento.');
+        // WEBCAM FUNCTIONS
+        startCameraButton.addEventListener('click', async () => {
+            if (isWebcamActive) {
+                console.log('DEBUG: Cámara ya está activa.');
                 return;
             }
-            if (isWebcamActive) return; // Prevent multiple camera starts
-
-            console.log('DEBUG: Iniciando webcam...');
+            console.log('DEBUG: Intentando iniciar cámara...');
             try {
-                // Constraints for higher resolution and good illumination for mobile
-                // Prefer facingMode: environment (rear camera)
-                const constraints = {
-                    video: {
-                        facingMode: { ideal: 'environment' },
-                        width: { ideal: 1280 }, // Attempt for higher resolution
-                        height: { ideal: 720 },
-                    }
-                };
-
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                // Ensure model is loaded before starting webcam
+                if (!model) {
+                    await initModel();
+                }
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 webcamVideo.srcObject = stream;
                 webcamVideo.style.display = 'block';
-                outputImage.style.display = 'none'; // Ocultar imagen subida
-                uploadInput.value = ''; // Limpiar input de archivo
+                outputImage.style.display = 'none';
                 clearImageButton.style.display = 'none';
-
-                predictionOverlayLabel.style.display = 'none'; // Iniciar oculto
-                mediaContainer.classList.remove('reciclable-border', 'organico-border', 'no-reciclable-border', 'no-detectado-border'); // Limpiar bordes
-
                 startCameraButton.style.display = 'none';
                 stopCameraButton.style.display = 'inline-flex';
-                uploadButton.style.display = 'none';
-
+                uploadButton.style.display = 'none'; // Hide upload button when webcam is active
                 isWebcamActive = true;
-                window.requestAnimationFrame(loop); // Start the prediction loop
-
-                console.log('DEBUG: Webcam started for Teachable Machine.');
-
-            } catch (error) {
-                alert('Error al acceder a la cámara: ' + error.message + '. Asegúrate de permitir el acceso a la cámara y que esté disponible.');
-                console.error('DEBUG: Error al iniciar cámara:', error);
-                stopWebcam();
+                webcamVideo.onloadedmetadata = () => {
+                    if (animationFrameId) {
+                        window.cancelAnimationFrame(animationFrameId);
+                    }
+                    loop(); // Start prediction loop once video metadata is loaded
+                };
+                console.log('DEBUG: Cámara iniciada correctamente.');
+            } catch (err) {
+                console.error('DEBUG: Error al acceder a la cámara:', err);
+                alert('No se pudo acceder a la cámara. Asegúrate de haber dado permisos y de que no esté siendo usada por otra aplicación. Error: ' + err.message);
+                isWebcamActive = false;
+                startCameraButton.style.display = 'inline-flex';
+                stopCameraButton.style.display = 'none';
+                uploadButton.style.display = 'inline-flex';
             }
-        }
+        });
+
+        stopCameraButton.addEventListener('click', () => {
+            stopWebcam();
+        });
 
         function stopWebcam() {
             if (webcamVideo.srcObject) {
-                console.log('DEBUG: Deteniendo webcam...');
                 webcamVideo.srcObject.getTracks().forEach(track => track.stop());
                 webcamVideo.srcObject = null;
             }
             if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
+                window.cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
             }
             webcamVideo.style.display = 'none';
             predictionOverlayLabel.style.display = 'none';
-            mediaContainer.classList.remove('reciclable-border', 'organico-border', 'no-reciclable-border', 'no-detectado-border'); // Limpiar bordes
-            clearTimeout(predictionHideTimeout); // Limpiar cualquier timeout pendiente
-
+            mediaContainer.classList.remove('reciclable-border', 'organico-border', 'no-reciclable-border', 'no-detectado-border');
             startCameraButton.style.display = 'inline-flex';
             stopCameraButton.style.display = 'none';
             uploadButton.style.display = 'inline-flex'; // Show upload button again
-
             isWebcamActive = false;
-            lastPredictionCategory = ''; // Reset prediction state
-            console.log('DEBUG: Webcam stopped.');
+            console.log('DEBUG: Cámara detenida.');
+            lastPredictionCategory = ''; // Reset prediction category on stop
+            clearTimeout(predictionHideTimeout); // Clear any pending hide timeout
         }
 
-        // EVENT LISTENERS
-        startCameraButton.addEventListener('click', startWebcam);
-        stopCameraButton.addEventListener('click', stopWebcam);
 
+        // IMAGE UPLOAD FUNCTIONS
         uploadButton.addEventListener('click', () => {
-            console.log('DEBUG: Botón "Subir Imagen" clickeado. Abriendo selector de archivos.');
-            stopWebcam(); // Stop webcam if trying to upload
-            uploadInput.click();
+            stopWebcam(); // Stop webcam if active
+            uploadInput.click(); // Trigger file input click
         });
 
-        uploadInput.addEventListener('change', (event) => {
-            console.log('DEBUG: Archivo seleccionado en el input.');
+        uploadInput.addEventListener('change', async (event) => {
             const file = event.target.files[0];
             if (file) {
-                console.log('DEBUG: Archivo encontrado:', file.name);
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    console.log('DEBUG: FileReader cargó la imagen.');
+                reader.onload = async (e) => {
                     outputImage.src = e.target.result;
                     outputImage.style.display = 'block';
-                    webcamVideo.style.display = 'none'; // Ocultar webcam
-                    predictionOverlayLabel.style.display = 'none'; // Ocultar al cargar la imagen, se mostrará con la predicción
-
-                    // Asegurarse de que la imagen esté completamente cargada antes de predecir
-                    outputImage.onload = () => {
-                        console.log('DEBUG: Imagen cargada en outputImage. Ejecutando predicción...');
-                        predictImage(outputImage); 
-                    };
-                    
+                    webcamVideo.style.display = 'none';
+                    startCameraButton.style.display = 'none';
+                    stopCameraButton.style.display = 'none';
+                    uploadButton.style.display = 'inline-flex'; // Keep upload button visible for new uploads
                     clearImageButton.style.display = 'inline-flex';
-                    startCameraButton.style.display = 'inline-flex';
-                    uploadButton.style.display = 'none'; // Hide upload button after image selected
+
+                    // Ensure model is loaded before predicting
+                    if (!model) {
+                        await initModel();
+                    }
+                    predictImage(outputImage);
                 };
                 reader.readAsDataURL(file);
-            } else {
-                console.log('DEBUG: No se seleccionó ningún archivo.');
             }
         });
 
         clearImageButton.addEventListener('click', () => {
-            console.log('DEBUG: Botón "Limpiar" clickeado.');
             outputImage.src = '#';
             outputImage.style.display = 'none';
             predictionOverlayLabel.style.display = 'none';
-            mediaContainer.classList.remove('reciclable-border', 'organico-border', 'no-reciclable-border', 'no-detectado-border'); // Limpiar bordes
+            mediaContainer.classList.remove('reciclable-border', 'organico-border', 'no-reciclable-border', 'no-detectado-border');
             clearImageButton.style.display = 'none';
-            uploadInput.value = ''; // Clear the input field for re-uploading same file
+            startCameraButton.style.display = 'inline-flex';
             uploadButton.style.display = 'inline-flex';
-            console.log('DEBUG: Imagen y etiqueta de predicción limpiadas.');
+            lastPredictionCategory = ''; // Reset prediction category on clear
+            clearTimeout(predictionHideTimeout); // Clear any pending hide timeout
         });
 
         // THEME TOGGLE
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const isDarkMode = document.body.classList.contains('dark-mode');
-            themeToggle.innerHTML = isDarkMode ? '<span class="material-icons">light_mode</span>' : '<span class="material-icons">dark_mode</span>';
-            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            themeToggle.querySelector('.material-icons').textContent = isDarkMode ? 'light_mode' : 'dark_mode';
         });
-
-        // Load saved theme on startup
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark-mode');
-            themeToggle.innerHTML = '<span class="material-icons">light_mode</span>';
-        } else {
-            themeToggle.innerHTML = '<span class="material-icons">dark_mode</span>';
-        }
 
         // Initialize model on page load
         initModel();
@@ -1151,9 +1154,7 @@
         // Initial section display
         document.addEventListener('DOMContentLoaded', () => {
             showSection('home-section');
-            // Si necesitas la clave API de Google Maps, cárgala aquí.
-            // loadGoogleMapsScript();
         });
     </script>
-    </body>
+</body>
 </html>
