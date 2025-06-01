@@ -942,11 +942,16 @@
 
         async function predictImage(imageElement) {
             console.log('DEBUG: Iniciando predictImage para la imagen subida.');
+            // Asegúrate de que el modelo esté cargado antes de predecir
             if (!model) {
-                console.log('DEBUG: Modelo no cargado al intentar predecir imagen. Esperando...');
-                alert('El modelo aún no está cargado. Por favor, espera un momento e intenta de nuevo.');
-                return;
+                await initModel(); // Espera a que el modelo se cargue si no lo está
+                if (!model) { // Si aún no se cargó por algún error, salimos
+                    console.log('DEBUG: El modelo no se pudo cargar. No se puede predecir la imagen.');
+                    displayPrediction('Error: Modelo no disponible');
+                    return;
+                }
             }
+            
             try {
                 const prediction = await model.predict(imageElement);
                 console.log('DEBUG: Predicciones del modelo:', prediction);
@@ -963,7 +968,19 @@
                     }
                 }
                 console.log(`DEBUG: Mejor detección: ${detectedCategory} con probabilidad: ${bestProbability}`);
+                
+                clearTimeout(predictionHideTimeout); // Limpiar cualquier timeout anterior
                 displayPrediction(detectedCategory); // Mostrar la predicción
+                lastPredictionCategory = detectedCategory; // Actualizar la última categoría detectada
+
+                predictionHideTimeout = setTimeout(() => {
+                    if (detectedCategory === lastPredictionCategory) {
+                        displayPrediction('no detectado');
+                        lastPredictionCategory = 'no detectado';
+                    }
+                }, predictionDisplayDuration);
+
+
             } catch (error) {
                 console.error('DEBUG: Error durante la predicción de la imagen:', error);
                 displayPrediction('Error al analizar');
@@ -1005,6 +1022,10 @@
                 // Ensure model is loaded before starting webcam
                 if (!model) {
                     await initModel();
+                    if (!model) { // Si aún no se cargó por algún error, salimos
+                        alert('El modelo de IA no está disponible. No se puede iniciar la cámara.');
+                        return;
+                    }
                 }
 
                 let videoConstraints = {}; // Default empty constraints for PC
@@ -1017,7 +1038,7 @@
                     // Try to use the rear camera (environment facing) for mobile
                     videoConstraints = {
                         facingMode: { exact: "environment" }, // Prefer rear camera exactly
-                        // You can also add preferred resolution here if needed, e.g.,
+                        // Puedes añadir también resoluciones preferidas aquí si es necesario
                         // width: { ideal: 1280 },
                         // height: { ideal: 720 }
                     };
@@ -1096,11 +1117,20 @@
                     uploadButton.style.display = 'inline-flex'; // Keep upload button visible for new uploads
                     clearImageButton.style.display = 'inline-flex';
 
-                    // Ensure model is loaded before predicting
-                    if (!model) {
-                        await initModel();
-                    }
-                    predictImage(outputImage);
+                    // Limpiar el timeout anterior para evitar conflictos de visualización
+                    clearTimeout(predictionHideTimeout);
+                    lastPredictionCategory = ''; // Reiniciar la última categoría para forzar la actualización
+
+                    // Predice la imagen después de que la imagen esté cargada en el DOM
+                    // Usamos un pequeño retardo para asegurar que la imagen esté renderizada y lista para TM
+                    outputImage.onload = () => {
+                         predictImage(outputImage);
+                    };
+                    // Si la imagen ya está en caché o se carga muy rápido, onload podría no dispararse.
+                    // Podemos poner un fallback con un setTimeout, o simplemente llamar predictImage directamente
+                    // después del src, asumiendo que el navegador será rápido.
+                    // La llamada directa (como estaba antes) funciona si el modelo ya está cargado.
+                    // La garantía real es que `predictImage` se encargue de `initModel()`.
                 };
                 reader.readAsDataURL(file);
             }
